@@ -37,10 +37,16 @@ description: 학년을 입력받아 수학학원 블로그 글 + 카드뉴스 4�
 ## 4단계 — 카드뉴스 4장 (Canva)
 - 본문에서 핵심 메시지 4개를 뽑는다: ①후킹 제목 슬라이드 ②정보 슬라이드 A ③정보 슬라이드 B
   ④학원 안내/CTA 슬라이드.
+- 브랜드 기준 (확정, 매번 동일하게 적용):
+  - 메인 컬러: **노란색** 포인트
+  - 학원명: "민락동 쎈수학앤논술학원"
 - Canva MCP 도구로 진행한다:
-  1. 브랜드 템플릿이 이미 있으면 `create-design-from-brand-template`로 4슬라이드 생성.
-     없으면 `generate-design-structured`로 카드뉴스 4장을 새로 만든다.
-  2. 완성 후 `export-design`으로 이미지(PNG) 또는 PPT로 내보낸다.
+  1. `request-outline-review`로 4슬라이드 개요를 만들고 사용자 승인을 받는다 (style에 "노란색 포인트" 명시).
+  2. 승인 후 `generate-design-structured`로 디자인 생성.
+  3. **항상 1:1 정사각형 + 9:16 세로 두 사이즈를 세트로 만든다**: `search-designs`로 방금 만든 디자인의 실제 `design_id`(D로 시작, 11자)를 찾은 뒤, `resize-design`을 두 번 호출 —
+     custom 1080x1080 (피드용), custom 1080x1920 (스토리용).
+  4. `resize-design`은 Canva 무료 체험 횟수 제한이 있는 기능이다 (`trial_information.uses_remaining`이 0이 되면 더 이상 리사이즈 불가). 막히면 즉시 원장님께 "Canva 유료 플랜 필요" 사실을 알린다 — 조용히 건너뛰지 않는다.
+  5. 완성 후 `export-design`으로 이미지(PNG) 또는 PPT로 내보낸다.
 - 카드뉴스 텍스트는 본문 요약이 아니라 "한 장에 한 메시지"로 짧게 재구성한다 (문장 아님, 헤드라인 수준).
 
 ## 5단계 — 교육적/법적 검수
