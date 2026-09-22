@@ -1,0 +1,25 @@
+{
+  "_설명": "학부모 동의를 받은 사진만 여기에 등록하세요. consent가 true이고 만료되지 않은 사진만 자동화가 선택합니다. 실제 파일은 config/photo_manifest.json 으로 복사해서 채워주세요 (이 example 파일은 git에만 남고 실제 사진 경로/개인 식별 정보는 넣지 마세요).",
+  "photos": [
+    {
+      "id": "2025-03-15_grp01",
+      "file": "google-drive://academy-photos/2025-03/grp01.jpg",
+      "consent": true,
+      "consent_date": "2025-03-01",
+      "consent_expires": "2026-03-01",
+      "tags": ["수업풍경", "중등부", "그룹활동", "뒷모습"],
+      "faces_identifiable": false,
+      "notes": "얼굴 미노출, 그룹 문제풀이 장면"
+    },
+    {
+      "id": "2025-05-02_exam_prep",
+      "file": "google-drive://academy-photos/2025-05/exam_prep.jpg",
+      "consent": true,
+      "consent_date": "2025-04-20",
+      "consent_expires": "2026-04-20",
+      "tags": ["시험대비", "고등부", "특강"],
+      "faces_identifiable": true,
+      "notes": "얼굴 노출 있음 - 개별 동의서 확인됨, 실명/학교명 캡션 금지"
+    }
+  ]
+}

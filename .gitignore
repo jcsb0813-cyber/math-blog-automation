@@ -1,0 +1,5 @@
+.env
+config/photo_manifest.json
+output/
+__pycache__/
+*.pyc
