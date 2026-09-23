@@ -22,7 +22,7 @@ where py > nul 2>&1 || set "PY=python"
   exit /b 1
 )
 
-%PY% -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg
+%PY% -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif
 %PY% "%~dp0make_reel.py" --photos "%TARGET%" --fill
 echo.
 echo 완성영상 폴더를 엽니다.

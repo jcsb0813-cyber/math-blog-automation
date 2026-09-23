@@ -13,8 +13,10 @@
     python make_reel.py --photos ./reel_photos --script ./reel_script.txt \
         --seconds 1.5 --music ./bgm.mp3 --out output/reels/중2_시험대비.mp4
 
-필요 패키지: pip install pillow imageio-ffmpeg  (ffmpeg가 설치돼 있으면 그걸 우선 사용)
+필요 패키지: pip install pillow imageio-ffmpeg pillow-heif  (ffmpeg가 설치돼 있으면 그걸 우선 사용)
 """
+
+from __future__ import annotations  # macOS 기본 파이썬(3.9)에서도 동작하도록
 
 import argparse
 import datetime
@@ -29,7 +31,15 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 WIDTH, HEIGHT = 1080, 1920
 FPS = 30
-IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".heic", ".heif"}
+
+# 아이폰 사진(HEIC)을 읽기 위한 플러그인 (pip install pillow-heif)
+try:
+    from pillow_heif import register_heif_opener
+
+    register_heif_opener()
+except ImportError:
+    pass
 
 # 자막 띠 색상 (학원 브랜드 노란색)
 BRAND_YELLOW = (255, 214, 0)

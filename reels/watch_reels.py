@@ -17,6 +17,8 @@
     (Ctrl+C 로 종료)
 """
 
+from __future__ import annotations  # macOS 기본 파이썬(3.9)에서도 동작하도록
+
 import argparse
 import datetime
 import time
