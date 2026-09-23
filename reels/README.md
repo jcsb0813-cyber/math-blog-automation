@@ -84,7 +84,7 @@ python watch_reels.py --root ./릴스 --create 100    # 폴더 감시 (Ctrl+C �
 | `--seconds` | 사진 1장당 초 (기본 1) |
 | `--script` | 자막 대본 txt (노란 띠 자막 + `.srt` 파일 함께 저장) |
 | `--music` | 배경음악 (영상 길이에 맞춰 자르고 마지막 1초 페이드아웃) |
-| `--position` / `--font-size` / `--font` | 자막 위치·크기·폰트 |
+| `--position` / `--font-size` / `--font` | 자막 위치(bottom/third/center/top, third = 화면 위쪽 1/3)·크기·폰트 |
 
 ## 릴스 비율 팁
 

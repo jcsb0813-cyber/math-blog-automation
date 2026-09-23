@@ -51,9 +51,12 @@ FONT_CANDIDATES = [
     "C:/Windows/Fonts/malgun.ttf",
     # macOS
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+    str(Path.home() / "Library/Fonts/NanumBarunGothicBold.ttf"),
+    "/Library/Fonts/NanumBarunGothicBold.ttf",
     "/Library/Fonts/NanumGothicExtraBold.ttf",
     "/Library/Fonts/NanumGothicBold.ttf",
     # Linux
+    "/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf",
     "/usr/share/fonts/truetype/nanum/NanumGothicExtraBold.ttf",
     "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
@@ -155,6 +158,8 @@ def draw_subtitle(frame: Image.Image, text: str, font_path: str, font_size: int,
     # 인스타 릴스 UI(하단 캡션/버튼)에 가리지 않도록 세이프존 안쪽에 배치
     if position == "top":
         top = 260
+    elif position == "third":  # 화면 위쪽 1/3 지점에 가운데 맞춤
+        top = HEIGHT // 3 - block_h // 2
     elif position == "center":
         top = (HEIGHT - block_h) // 2
     else:
@@ -164,14 +169,11 @@ def draw_subtitle(frame: Image.Image, text: str, font_path: str, font_size: int,
         w = draw.textlength(line, font=font)
         x = (WIDTH - w) / 2
         y = top + i * line_h
-        # 노란 형광펜 띠 + 검은 글씨 (브랜드 노란색 포인트)
-        pad_x, pad_y = 24, 8
-        draw.rounded_rectangle(
-            [x - pad_x, y - pad_y, x + w + pad_x, y + line_h - pad_y],
-            radius=14,
-            fill=BRAND_YELLOW,
-        )
-        draw.text((x, y), line, font=font, fill=(20, 20, 20))
+        # 노란 형광펜 띠 + 검은 글씨 (브랜드 노란색 포인트). 글자는 띠 한가운데 정렬(폰트마다 높이가 달라서)
+        pad_x = 24
+        band_h = int(font_size * 1.2)
+        draw.rounded_rectangle([x - pad_x, y, x + w + pad_x, y + band_h], radius=14, fill=BRAND_YELLOW)
+        draw.text((WIDTH / 2, y + band_h / 2), line, font=font, fill=(20, 20, 20), anchor="mm")
     return frame
 
 
@@ -265,7 +267,7 @@ def main() -> None:
     ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
     ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
     ap.add_argument("--font-size", type=int, default=72)
-    ap.add_argument("--position", choices=["bottom", "center", "top"], default="bottom")
+    ap.add_argument("--position", choices=["bottom", "third", "center", "top"], default="bottom")
     args = ap.parse_args()
 
     if args.seconds <= 0:
