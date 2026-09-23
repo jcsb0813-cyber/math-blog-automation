@@ -24,5 +24,5 @@ fi
 "$VENV/bin/python" -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif \
   || { read -r -p "패키지 설치 실패 (인터넷 연결 확인). 엔터를 누르면 닫힙니다."; exit 1; }
 
-"$VENV/bin/python" make_reel.py --photos "$TARGET" --fill && open "$TARGET/완성영상"
+"$VENV/bin/python" make_reel.py --photos "$TARGET" --fill --first-only --position third --font-size 80 --first-seconds 1 --seconds 0.7 && open "$TARGET/완성영상"
 read -r -p "끝났습니다. 엔터를 누르면 닫힙니다."

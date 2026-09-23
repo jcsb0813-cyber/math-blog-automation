@@ -8,6 +8,7 @@
 - 폴더에 사진이 없으면 아무것도 하지 않고 기다린다.
 - 사진이 들어오면, 추가가 끝날 때까지(기본 10초간 변화 없음) 기다렸다가 영상을 만든다.
   → 사진을 여러 장 옮기는 중간에 영상이 만들어지지 않는다.
+- 첫 사진은 1초, 나머지 사진은 0.7초씩 (--first-seconds / --seconds 로 변경).
 - 영상은 그 폴더 안에 "<폴더이름>.mp4" 로 저장한다.
 - 이미 영상을 만든 폴더에 사진을 더 넣거나 바꾸면 영상을 다시 만든다.
 - 폴더에 대본.txt 가 있으면 그 내용을 첫 사진(처음 1초)에 제목 자막으로 넣는다 (줄바꿈 그대로).
@@ -60,7 +61,8 @@ def main() -> None:
     ap.add_argument("--create", type=int, default=0, help="1번~N번 폴더를 미리 만들어 둠 (이미 있으면 건너뜀)")
     ap.add_argument("--settle", type=float, default=10, help="마지막 사진이 들어온 뒤 이만큼(초) 변화가 없으면 작업 시작")
     ap.add_argument("--interval", type=float, default=3, help="폴더 확인 주기(초)")
-    ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초")
+    ap.add_argument("--first-seconds", type=float, default=1.0, help="첫 사진 길이(초)")
+    ap.add_argument("--seconds", type=float, default=0.7, help="두 번째 사진부터 1장당 길이(초)")
     ap.add_argument("--no-fill", action="store_true", help="화면 꽉 채우지 않고 흐린 여백으로 원본 전체 보이기")
     args = ap.parse_args()
 
@@ -71,14 +73,14 @@ def main() -> None:
 
     ffmpeg = find_ffmpeg()
     # 대본.txt 가 있으면: 첫 사진(처음 1초)에만, 화면 위쪽 1/3 지점에 제목 자막
-    opts = SimpleNamespace(seconds=args.seconds, fill=not args.no_fill, music=None,
+    opts = SimpleNamespace(seconds=args.seconds, first_seconds=args.first_seconds, fill=not args.no_fill, music=None,
                            font=None, font_size=80, position="third", first_only=True)
 
     seen: dict[Path, tuple] = {}      # 폴더 → 마지막으로 본 사진 상태
     changed_at: dict[Path, float] = {}  # 폴더 → 사진 상태가 마지막으로 바뀐 시각
     built: dict[Path, tuple] = {}     # 폴더 → 영상을 만들 때의 사진 상태
 
-    log(f"감시 시작: {root}  (사진을 넣으면 {args.settle:.0f}초 뒤 영상 생성, 종료는 Ctrl+C)")
+    log(f"감시 시작: {root}  (첫 사진 {args.first_seconds:g}초 + 나머지 {args.seconds:g}초씩, 종료는 Ctrl+C)")
     try:
         while True:
             folders = sorted((d for d in root.iterdir() if d.is_dir()), key=lambda d: natural_key(d.name))

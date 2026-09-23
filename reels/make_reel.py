@@ -19,6 +19,7 @@
 from __future__ import annotations  # macOS 기본 파이썬(3.9)에서도 동작하도록
 
 import argparse
+import bisect
 import datetime
 import re
 import shutil
@@ -179,12 +180,16 @@ def draw_subtitle(frame: Image.Image, text: str, font_path: str, font_size: int,
     return frame
 
 
-def build_timeline(n_photos: int, seconds: float, n_lines: int) -> tuple[list[float], list[tuple[float, float]]]:
-    """사진 경계와 자막 구간을 계산한다."""
-    total = n_photos * seconds
-    photo_bounds = [i * seconds for i in range(n_photos + 1)]
-    step = total / n_lines
-    subs = [(round(i * step, 3), round((i + 1) * step, 3)) for i in range(n_lines)]
+def build_timeline(durations: list[float], n_lines: int) -> tuple[list[float], list[tuple[float, float]]]:
+    """사진 경계와 자막 구간을 계산한다. 자막 줄 수 = 사진 수면 사진마다 1줄, 아니면 전체 길이에 균등 배분."""
+    photo_bounds = [0.0]
+    for d in durations:
+        photo_bounds.append(round(photo_bounds[-1] + d, 3))
+    if n_lines == len(durations):
+        subs = list(zip(photo_bounds[:-1], photo_bounds[1:]))
+    else:
+        step = photo_bounds[-1] / n_lines
+        subs = [(round(i * step, 3), round((i + 1) * step, 3)) for i in range(n_lines)]
     return photo_bounds, subs
 
 
@@ -209,7 +214,10 @@ def make_reel(photos: list[Path], out: Path, lines: list[str], font_path: str, f
     if getattr(args, "first_only", False) and lines != [""]:
         # 대본 전체를 제목처럼 첫 사진에만 표시 (대본의 줄바꿈 = 자막 줄바꿈, 나머지 사진은 자막 없음)
         lines = ["\\n".join(lines)] + [""] * (len(photos) - 1)
-    photo_bounds, subs = build_timeline(len(photos), args.seconds, len(lines))
+    # 사진별 길이: 첫 사진만 --first-seconds (없으면 --seconds), 나머지는 --seconds
+    first = getattr(args, "first_seconds", None) or args.seconds
+    durations = [first] + [args.seconds] * (len(photos) - 1)
+    photo_bounds, subs = build_timeline(durations, len(lines))
     if lines != [""] and len(lines) != len(photos) and not getattr(args, "first_only", False):
         print(f"※ 사진 {len(photos)}장 / 대본 {len(lines)}줄 — 개수가 달라서 자막을 전체 길이에 균등 배분합니다.")
 
@@ -227,7 +235,7 @@ def make_reel(photos: list[Path], out: Path, lines: list[str], font_path: str, f
             if end - start < 1e-6:
                 continue
             mid = (start + end) / 2
-            pi = min(int(mid // args.seconds), len(photos) - 1)
+            pi = min(bisect.bisect_right(photo_bounds, mid) - 1, len(photos) - 1)
             si = next(i for i, (s, e) in enumerate(subs) if s <= mid < e or i == len(subs) - 1)
             if pi not in bases:
                 with Image.open(photos[pi]) as im:
@@ -268,6 +276,7 @@ def main() -> None:
     ap.add_argument("--photos", required=True, help="사진 폴더 (파일명 순서대로 사용). 하위 폴더들이 들어 있으면 폴더마다 영상 1편씩")
     ap.add_argument("--script", help="대본 txt — 생략하면 자막 없는 영상 (한 줄 = 자막 한 줄, #으로 시작하면 무시, \\n 쓰면 강제 줄바꿈)")
     ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
+    ap.add_argument("--first-seconds", type=float, help="첫 사진만 다른 길이로 (예: --first-seconds 1 --seconds 0.7)")
     ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4, 폴더 묶음이면 <사진폴더>/완성영상/)")
     ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
     ap.add_argument("--first-only", action="store_true", help="대본 전체를 제목처럼 첫 사진(처음 1장)에만 표시 (대본의 줄바꿈 그대로)")
@@ -277,7 +286,7 @@ def main() -> None:
     ap.add_argument("--position", choices=["bottom", "third", "center", "top"], default="bottom")
     args = ap.parse_args()
 
-    if args.seconds <= 0:
+    if args.seconds <= 0 or (args.first_seconds is not None and args.first_seconds <= 0):
         sys.exit("--seconds 는 0보다 커야 합니다.")
 
     ffmpeg = find_ffmpeg()
