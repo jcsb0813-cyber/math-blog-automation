@@ -1,13 +1,16 @@
 #!/bin/bash
-# 맥용: 더블클릭하면 바탕화면/릴스 안의 1번, 2번 … 폴더를 한 번에 영상으로 만듭니다.
-# 결과: 바탕화면/릴스/완성영상/1번.mp4, 2번.mp4 …
+# 맥용: 더블클릭하면 iCloud Drive/릴스 (없으면 바탕화면/릴스) 안의 1번, 2번 … 폴더를 한 번에 영상으로 만듭니다.
+# 결과: 릴스/완성영상/1번.mp4, 2번.mp4 …
 cd "$(dirname "$0")" || exit 1
-TARGET="${1:-$HOME/Desktop/릴스}"
+# iCloud Drive가 켜져 있으면 iCloud Drive/릴스 (아이패드 파일 앱에서도 보임), 아니면 바탕화면/릴스
+ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+if [ -d "$ICLOUD" ]; then DEFAULT="$ICLOUD/릴스"; else DEFAULT="$HOME/Desktop/릴스"; fi
+TARGET="${1:-$DEFAULT}"
 VENV="$HOME/.reels-venv"
 
 if [ ! -d "$TARGET" ]; then
   echo "폴더를 찾을 수 없습니다: $TARGET"
-  echo "바탕화면에 '릴스' 폴더를 만들고 그 안에 1번, 2번 … 폴더로 사진을 넣어주세요."
+  echo "iCloud Drive(또는 바탕화면)에 '릴스' 폴더를 만들고 그 안에 1번, 2번 … 폴더로 사진을 넣어주세요."
   read -r -p "엔터를 누르면 닫힙니다."; exit 1
 fi
 if ! command -v python3 > /dev/null 2>&1; then

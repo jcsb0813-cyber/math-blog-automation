@@ -1,9 +1,12 @@
 #!/bin/bash
-# 맥용: 더블클릭하면 바탕화면/릴스 에 1번~100번 폴더를 만들고 계속 지켜봅니다.
+# 맥용: 더블클릭하면 iCloud Drive/릴스 (없으면 바탕화면/릴스) 에 1번~100번 폴더를 만들고 계속 지켜봅니다.
 # 폴더에 사진을 넣으면 10초 뒤 그 폴더 안에 영상(예: 1번/1번.mp4)이 만들어집니다.
 # 끄려면 이 터미널 창을 닫으면 됩니다.
 cd "$(dirname "$0")" || exit 1
-TARGET="${1:-$HOME/Desktop/릴스}"
+# iCloud Drive가 켜져 있으면 iCloud Drive/릴스 (아이패드 파일 앱에서도 보임), 아니면 바탕화면/릴스
+ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+if [ -d "$ICLOUD" ]; then DEFAULT="$ICLOUD/릴스"; else DEFAULT="$HOME/Desktop/릴스"; fi
+TARGET="${1:-$DEFAULT}"
 VENV="$HOME/.reels-venv"
 
 if ! command -v python3 > /dev/null 2>&1; then

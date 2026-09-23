@@ -11,6 +11,7 @@
 - 영상은 그 폴더 안에 "<폴더이름>.mp4" 로 저장한다.
 - 이미 영상을 만든 폴더에 사진을 더 넣거나 바꾸면 영상을 다시 만든다.
 - 폴더에 대본.txt 가 있으면 자막도 넣는다.
+- 꺼져 있거나 잠자기였던 동안 들어온 사진은, 다시 켜지면 확인해서 영상을 만든다.
 
 사용 예:
     python watch_reels.py --root "C:/Users/나/Desktop/릴스" --create 100
@@ -41,6 +42,16 @@ def signature(photos: list[Path], folder: Path) -> tuple:
     """사진 목록/크기/수정시각 (+대본) — 이 값이 바뀌면 '사진이 바뀌었다'고 본다."""
     files = photos + [p for p in [folder / "대본.txt"] if p.exists()]
     return tuple((p.name, p.stat().st_size, p.stat().st_mtime) for p in files)
+
+
+def done_marker(folder: Path) -> Path:
+    """영상을 어떤 사진들로 만들었는지 적어두는 숨김 파일 (프로그램을 다시 켜도 기억하도록)."""
+    return folder / f".{folder.name}.만든사진목록"
+
+
+def content_key(sig: tuple) -> str:
+    # 수정시각은 iCloud 동기화 중 바뀔 수 있어서 이름+크기만 비교
+    return "\n".join(f"{name}\t{size}" for name, size, _ in sig)
 
 
 def main() -> None:
@@ -81,8 +92,9 @@ def main() -> None:
 
                 out = folder / f"{folder.name}.mp4"
                 if folder not in built and out.exists():
-                    # 프로그램을 다시 켰을 때: 영상이 모든 사진보다 최신이면 이미 끝난 폴더로 본다
-                    if out.stat().st_mtime >= max(t for _, _, t in sig):
+                    # 프로그램을 다시 켰을 때(잠자기/재부팅 후): 같은 사진으로 이미 만든 영상이면 건너뜀
+                    marker = done_marker(folder)
+                    if marker.exists() and marker.read_text(encoding="utf-8") == content_key(sig):
                         built[folder] = sig
                 if built.get(folder) == sig:
                     continue
@@ -105,6 +117,7 @@ def main() -> None:
                     tmp = folder / f"{folder.name}.만드는중.mp4"
                     make_reel(photos, tmp, lines, font_path, ffmpeg, opts)
                     tmp.replace(out)
+                    done_marker(folder).write_text(content_key(sig), encoding="utf-8")
                     log(f"{folder.name}: 완료 → {out}")
                     built[folder] = sig
                 except (Exception, SystemExit) as e:  # 사진 한 장이 깨져도 감시는 계속
