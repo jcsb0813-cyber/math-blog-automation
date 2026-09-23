@@ -46,6 +46,8 @@ BRAND_YELLOW = (255, 214, 0)
 
 # 한글이 되는 폰트를 OS별로 순서대로 찾는다. --font 로 직접 지정 가능.
 FONT_CANDIDATES = [
+    # 함께 들어 있는 나눔바른고딕 Bold (어느 컴퓨터에서든 같은 모양으로 나오도록 1순위)
+    str(Path(__file__).resolve().parent / "fonts" / "NanumBarunGothicBold.ttf"),
     # Windows
     "C:/Windows/Fonts/malgunbd.ttf",
     "C:/Windows/Fonts/malgun.ttf",
@@ -205,8 +207,8 @@ def write_srt(path: Path, lines: list[str], subs: list[tuple[float, float]]) -> 
 def make_reel(photos: list[Path], out: Path, lines: list[str], font_path: str, ffmpeg: str, args) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     if getattr(args, "first_only", False) and lines != [""]:
-        # 대본 첫 줄을 첫 사진에만 표시 (나머지 사진은 자막 없음)
-        lines = [lines[0]] + [""] * (len(photos) - 1)
+        # 대본 전체를 제목처럼 첫 사진에만 표시 (대본의 줄바꿈 = 자막 줄바꿈, 나머지 사진은 자막 없음)
+        lines = ["\\n".join(lines)] + [""] * (len(photos) - 1)
     photo_bounds, subs = build_timeline(len(photos), args.seconds, len(lines))
     if lines != [""] and len(lines) != len(photos) and not getattr(args, "first_only", False):
         print(f"※ 사진 {len(photos)}장 / 대본 {len(lines)}줄 — 개수가 달라서 자막을 전체 길이에 균등 배분합니다.")
@@ -268,7 +270,7 @@ def main() -> None:
     ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
     ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4, 폴더 묶음이면 <사진폴더>/완성영상/)")
     ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
-    ap.add_argument("--first-only", action="store_true", help="대본 첫 줄을 첫 사진(처음 1장)에만 표시")
+    ap.add_argument("--first-only", action="store_true", help="대본 전체를 제목처럼 첫 사진(처음 1장)에만 표시 (대본의 줄바꿈 그대로)")
     ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
     ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
     ap.add_argument("--font-size", type=int, default=72)

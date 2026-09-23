@@ -10,7 +10,7 @@
   → 사진을 여러 장 옮기는 중간에 영상이 만들어지지 않는다.
 - 영상은 그 폴더 안에 "<폴더이름>.mp4" 로 저장한다.
 - 이미 영상을 만든 폴더에 사진을 더 넣거나 바꾸면 영상을 다시 만든다.
-- 폴더에 대본.txt 가 있으면 자막도 넣는다.
+- 폴더에 대본.txt 가 있으면 그 내용을 첫 사진(처음 1초)에 제목 자막으로 넣는다 (줄바꿈 그대로).
 - 꺼져 있거나 잠자기였던 동안 들어온 사진은, 다시 켜지면 확인해서 영상을 만든다.
 
 사용 예:
@@ -70,8 +70,9 @@ def main() -> None:
         (root / f"{i}번").mkdir(exist_ok=True)
 
     ffmpeg = find_ffmpeg()
+    # 대본.txt 가 있으면: 첫 사진(처음 1초)에만, 화면 위쪽 1/3 지점에 제목 자막
     opts = SimpleNamespace(seconds=args.seconds, fill=not args.no_fill, music=None,
-                           font=None, font_size=72, position="bottom")
+                           font=None, font_size=80, position="third", first_only=True)
 
     seen: dict[Path, tuple] = {}      # 폴더 → 마지막으로 본 사진 상태
     changed_at: dict[Path, float] = {}  # 폴더 → 사진 상태가 마지막으로 바뀐 시각
@@ -117,6 +118,7 @@ def main() -> None:
                     tmp = folder / f"{folder.name}.만드는중.mp4"
                     make_reel(photos, tmp, lines, font_path, ffmpeg, opts)
                     tmp.replace(out)
+                    tmp.with_suffix(".srt").unlink(missing_ok=True)  # 자막 파일은 폴더에 남기지 않음
                     done_marker(folder).write_text(content_key(sig), encoding="utf-8")
                     log(f"{folder.name}: 완료 → {out}")
                     built[folder] = sig
