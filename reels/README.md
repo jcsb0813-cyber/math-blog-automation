@@ -91,7 +91,7 @@ python watch_reels.py --root ./릴스 --create 100    # 폴더 감시 (Ctrl+C �
 | `--fill` | 흐린 여백 없이 화면 꽉 채우기 (휴대폰 3:4 사진은 양옆이 조금 잘림) |
 | `--seconds` | 사진 1장당 초 (기본 1) |
 | `--script` | 자막 대본 txt (노란 띠 자막 + `.srt` 파일 함께 저장) |
-| `--first-only` | 대본 첫 줄을 첫 사진에만 표시 (제목처럼) |
+| `--first-only` | 대본 전체를 제목처럼 첫 사진에만 표시 (줄바꿈 그대로) |
 | `--music` | 배경음악 (영상 길이에 맞춰 자르고 마지막 1초 페이드아웃) |
 | `--position` / `--font-size` / `--font` | 자막 위치(bottom/third/center/top, third = 화면 위쪽 1/3)·크기·폰트 |
 
