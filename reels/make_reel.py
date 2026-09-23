@@ -7,10 +7,10 @@
   (인스타 업로드 시 자막을 따로 쓰고 싶을 때용).
 
 사용 예:
-    python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
-    python scripts/make_reel.py --photos ./reel_photos          # 자막 없이 사진만
-    python scripts/make_reel.py --photos ./릴스 --fill          # 릴스/1번, 릴스/2번 ... 폴더마다 1편씩 → 릴스/완성영상/
-    python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt \
+    python make_reel.py --photos ./reel_photos --script ./reel_script.txt
+    python make_reel.py --photos ./reel_photos          # 자막 없이 사진만
+    python make_reel.py --photos ./릴스 --fill          # 릴스/1번, 릴스/2번 ... 폴더마다 1편씩 → 릴스/완성영상/
+    python make_reel.py --photos ./reel_photos --script ./reel_script.txt \
         --seconds 1.5 --music ./bgm.mp3 --out output/reels/중2_시험대비.mp4
 
 필요 패키지: pip install pillow imageio-ffmpeg  (ffmpeg가 설치돼 있으면 그걸 우선 사용)
@@ -31,7 +31,7 @@ WIDTH, HEIGHT = 1080, 1920
 FPS = 30
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
-# 브랜드 기준 (카드뉴스와 동일한 노란색 포인트)
+# 자막 띠 색상 (학원 브랜드 노란색)
 BRAND_YELLOW = (255, 214, 0)
 
 # 한글이 되는 폰트를 OS별로 순서대로 찾는다. --font 로 직접 지정 가능.

@@ -23,7 +23,7 @@ where py > nul 2>&1 || set "PY=python"
 )
 
 %PY% -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg
-%PY% "%~dp0scripts\make_reel.py" --photos "%TARGET%" --fill
+%PY% "%~dp0make_reel.py" --photos "%TARGET%" --fill
 echo.
 echo 완성영상 폴더를 엽니다.
 start "" "%TARGET%\완성영상"

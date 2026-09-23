@@ -27,7 +27,7 @@
 - `docs/SETUP_CHECKLIST.md` — 실제로 돌리기 전에 준비해야 할 계정/키 목록 (지금 여기부터 보세요)
 - `config/photo_manifest.example.json` — 동의받은 사진을 태깅해서 관리하는 형식
 - `scripts/topic_research.py` — 네이버 데이터랩/검색 API로 학년별 트렌드 주제 후보 추출
-- `scripts/make_reel.py` — 사진 폴더 + 대본으로 인스타 릴스(1080x1920) 자동 생성 (아래 참고)
+- `reels/` — 사진 폴더로 인스타 릴스(9:16) 영상 자동 생성 (아래 참고)
 - `.claude/skills/blog-auto/SKILL.md` — Claude Code가 이 전체 파이프라인을 실행할 때 따르는 절차
 - `output/` — 회차별 결과물 (본문 초안, 카드뉴스, 검수 리포트)이 쌓이는 곳
 
@@ -38,32 +38,5 @@
 
 ## 인스타 릴스 만들기
 
-사진을 한 폴더에 넣고(파일명 순서 = 영상 순서), 자막이 필요하면 대본을 한 줄에 자막 하나씩 적은 txt를 준비합니다
-(`config/reel_script.example.txt` 참고).
-
-```bash
-pip install -r requirements.txt
-python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
-python scripts/make_reel.py --photos ./reel_photos   # 자막 없이 사진만
-```
-
-- 사진 1장당 1초 (`--seconds 1.5` 처럼 변경 가능), 9:16이 아닌 사진은 흐린 배경 위에 원본 전체가 보이게 배치
-- `--fill`: 흐린 여백 없이 화면을 꽉 채움 (휴대폰 세로 사진 3:4는 양옆이 조금 잘림)
-- 대본 줄 수 = 사진 장수면 1:1 매칭, 다르면 전체 길이에 균등 배분
-- 자막은 노란색 브랜드 띠로 영상에 새겨지고, 같은 이름의 `.srt`도 함께 저장
-- 배경음악: `--music bgm.mp3` (영상 길이에 맞춰 자르고 마지막 1초 페이드아웃)
-- 자막 위치: `--position bottom|center|top`, 크기: `--font-size 72`
-- 결과물 기본 위치: `output/reels/reel_<날짜_시각>.mp4`
-
-### 폴더별로 한 번에 여러 편 만들기 (윈도우)
-
-1. 바탕화면에 `릴스` 폴더를 만들고, 그 안에 `1번`, `2번` … 폴더를 만들어 영상별로 사진을 넣습니다
-   (폴더 이름 = 영상 이름, 폴더 안 사진은 파일명 순서대로).
-2. `릴스만들기.bat`을 더블클릭합니다 (다른 위치의 폴더는 이 파일 위로 끌어다 놓기).
-3. `릴스\완성영상\1번.mp4`, `2번.mp4` …로 저장되고 폴더가 자동으로 열립니다.
-
-- 자막이 필요한 폴더에만 `대본.txt`를 넣으면 그 폴더 영상에만 자막이 들어갑니다.
-- 처음 한 번은 파이썬 설치가 필요합니다 (python.org, 설치 시 "Add python.exe to PATH" 체크).
-- 얼굴 흐림 처리는 자동으로 되지 않습니다 — 필요한 사진은 미리 처리해서 넣으세요.
-
-학생 얼굴이 나오는 사진은 블로그와 똑같이 `photo_manifest.json`의 동의 여부를 먼저 확인하세요.
+사진 폴더를 넣으면 9:16 릴스 영상(사진당 1초)을 만들어 줍니다. 윈도우에서는 `reels/릴스만들기.bat` 더블클릭.
+자세한 사용법은 [`reels/README.md`](reels/README.md)를 보세요.
