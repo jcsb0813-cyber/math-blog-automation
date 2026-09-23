@@ -9,6 +9,7 @@
 사용 예:
     python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
     python scripts/make_reel.py --photos ./reel_photos          # 자막 없이 사진만
+    python scripts/make_reel.py --photos ./릴스 --fill          # 릴스/1번, 릴스/2번 ... 폴더마다 1편씩 → 릴스/완성영상/
     python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt \
         --seconds 1.5 --music ./bgm.mp3 --out output/reels/중2_시험대비.mp4
 
@@ -17,6 +18,7 @@
 
 import argparse
 import datetime
+import re
 import shutil
 import subprocess
 import sys
@@ -73,8 +75,13 @@ def find_font(user_font: str | None) -> str:
     sys.exit("한글 폰트를 찾지 못했습니다. --font 로 .ttf/.otf/.ttc 경로를 지정하세요.")
 
 
+def natural_key(name: str) -> list:
+    """'2번'이 '10번'보다 앞에 오도록 숫자는 숫자로 비교한다."""
+    return [int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", name)]
+
+
 def load_photos(folder: Path) -> list[Path]:
-    photos = sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXTS)
+    photos = sorted((p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXTS), key=lambda p: natural_key(p.name))
     if not photos:
         sys.exit(f"사진이 없습니다: {folder}")
     return photos
@@ -182,33 +189,10 @@ def write_srt(path: Path, lines: list[str], subs: list[tuple[float, float]]) -> 
     path.write_text("\n".join(out), encoding="utf-8")
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description="사진 + 대본 → 인스타 릴스 영상")
-    ap.add_argument("--photos", required=True, help="사진 폴더 (파일명 순서대로 사용)")
-    ap.add_argument("--script", help="대본 txt — 생략하면 자막 없는 영상 (한 줄 = 자막 한 줄, #으로 시작하면 무시, \\n 쓰면 강제 줄바꿈)")
-    ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
-    ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4)")
-    ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
-    ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
-    ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
-    ap.add_argument("--font-size", type=int, default=72)
-    ap.add_argument("--position", choices=["bottom", "center", "top"], default="bottom")
-    args = ap.parse_args()
-
-    if args.seconds <= 0:
-        sys.exit("--seconds 는 0보다 커야 합니다.")
-
-    photos = load_photos(Path(args.photos))
-    # 대본이 없으면 빈 자막 1줄로 처리 → 자막 없이 사진만 넘어가는 영상
-    lines = load_script(Path(args.script)) if args.script else [""]
-    font_path = find_font(args.font) if args.script else ""
-    ffmpeg = find_ffmpeg()
-
-    out = Path(args.out) if args.out else Path("output/reels") / f"reel_{datetime.datetime.now():%Y%m%d_%H%M%S}.mp4"
+def make_reel(photos: list[Path], out: Path, lines: list[str], font_path: str, ffmpeg: str, args) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
-
     photo_bounds, subs = build_timeline(len(photos), args.seconds, len(lines))
-    if args.script and len(lines) != len(photos):
+    if lines != [""] and len(lines) != len(photos):
         print(f"※ 사진 {len(photos)}장 / 대본 {len(lines)}줄 — 개수가 달라서 자막을 전체 길이에 균등 배분합니다.")
 
     # 사진 경계 + 자막 경계를 합쳐서 "화면이 바뀌는 순간"마다 정지 프레임 1장씩 만든다.
@@ -252,13 +236,60 @@ def main() -> None:
         cmd += ["-t", f"{total:.3f}", "-movflags", "+faststart", str(out)]
         subprocess.run(cmd, check=True)
 
-    if not args.script:
+    if not lines[0] and len(lines) == 1:
         print(f"완료: {out}  ({total:.1f}초, 사진 {len(photos)}장, 자막 없음)")
         return
     srt = out.with_suffix(".srt")
     write_srt(srt, lines, subs)
     print(f"완료: {out}  ({total:.1f}초, 사진 {len(photos)}장, 자막 {len(lines)}줄)")
     print(f"자막 파일: {srt}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="사진 + 대본 → 인스타 릴스 영상")
+    ap.add_argument("--photos", required=True, help="사진 폴더 (파일명 순서대로 사용). 하위 폴더들이 들어 있으면 폴더마다 영상 1편씩")
+    ap.add_argument("--script", help="대본 txt — 생략하면 자막 없는 영상 (한 줄 = 자막 한 줄, #으로 시작하면 무시, \\n 쓰면 강제 줄바꿈)")
+    ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
+    ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4, 폴더 묶음이면 <사진폴더>/완성영상/)")
+    ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
+    ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
+    ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
+    ap.add_argument("--font-size", type=int, default=72)
+    ap.add_argument("--position", choices=["bottom", "center", "top"], default="bottom")
+    args = ap.parse_args()
+
+    if args.seconds <= 0:
+        sys.exit("--seconds 는 0보다 커야 합니다.")
+
+    ffmpeg = find_ffmpeg()
+    src = Path(args.photos)
+    if not src.is_dir():
+        sys.exit(f"폴더가 없습니다: {src}")
+
+    # 폴더 안에 사진이 바로 있으면 영상 1편, 사진 대신 하위 폴더들이 있으면 폴더마다 1편씩
+    if any(p.suffix.lower() in IMAGE_EXTS for p in src.iterdir()):
+        jobs = [(src, Path(args.out) if args.out else Path("output/reels") / f"reel_{datetime.datetime.now():%Y%m%d_%H%M%S}.mp4")]
+    else:
+        out_dir = Path(args.out) if args.out else src / "완성영상"
+        subdirs = sorted(
+            (d for d in src.iterdir() if d.is_dir() and d.resolve() != out_dir.resolve()
+             and any(p.suffix.lower() in IMAGE_EXTS for p in d.iterdir())),
+            key=lambda d: natural_key(d.name),
+        )
+        if not subdirs:
+            sys.exit(f"사진이나 사진이 든 하위 폴더가 없습니다: {src}")
+        jobs = [(d, out_dir / f"{d.name}.mp4") for d in subdirs]
+        print(f"폴더 {len(jobs)}개 발견 → {out_dir} 에 저장합니다.")
+
+    for folder, out in jobs:
+        # --script 가 없으면 폴더 안의 대본.txt 를 자막으로 사용 (없으면 자막 없음)
+        if args.script:
+            lines = load_script(Path(args.script))
+        else:
+            script = folder / "대본.txt"
+            lines = load_script(script) if script.exists() else [""]
+        font_path = find_font(args.font) if lines != [""] else ""
+        make_reel(load_photos(folder), out, lines, font_path, ffmpeg, args)
 
 
 if __name__ == "__main__":
