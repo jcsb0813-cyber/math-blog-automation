@@ -47,7 +47,8 @@ python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
 python scripts/make_reel.py --photos ./reel_photos   # 자막 없이 사진만
 ```
 
-- 사진 1장당 1초 (`--seconds 1.5` 처럼 변경 가능), 세로 사진이 아니면 흐린 배경 위에 원본 전체가 보이게 배치
+- 사진 1장당 1초 (`--seconds 1.5` 처럼 변경 가능), 9:16이 아닌 사진은 흐린 배경 위에 원본 전체가 보이게 배치
+- `--fill`: 흐린 여백 없이 화면을 꽉 채움 (휴대폰 세로 사진 3:4는 양옆이 조금 잘림)
 - 대본 줄 수 = 사진 장수면 1:1 매칭, 다르면 전체 길이에 균등 배분
 - 자막은 노란색 브랜드 띠로 영상에 새겨지고, 같은 이름의 `.srt`도 함께 저장
 - 배경음악: `--music bgm.mp3` (영상 길이에 맞춰 자르고 마지막 1초 페이드아웃)

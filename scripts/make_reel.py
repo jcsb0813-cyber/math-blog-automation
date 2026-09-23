@@ -88,9 +88,12 @@ def load_script(path: Path) -> list[str]:
     return lines
 
 
-def fit_vertical(img: Image.Image) -> Image.Image:
-    """사진을 9:16 캔버스에 맞춘다. 비율이 다르면 흐린 배경 위에 원본 전체를 얹는다."""
+def fit_vertical(img: Image.Image, fill: bool = False) -> Image.Image:
+    """사진을 9:16 캔버스에 맞춘다. 비율이 다르면 흐린 배경 위에 원본 전체를 얹는다.
+    fill=True면 여백 없이 화면을 꽉 채우고 넘치는 가장자리(보통 양옆)를 잘라낸다."""
     img = ImageOps.exif_transpose(img).convert("RGB")
+    if fill:
+        return ImageOps.fit(img, (WIDTH, HEIGHT), Image.LANCZOS)
     bg = ImageOps.fit(img, (WIDTH, HEIGHT), Image.LANCZOS).filter(ImageFilter.GaussianBlur(40))
     bg = Image.blend(bg, Image.new("RGB", bg.size, (0, 0, 0)), 0.35)
     fg = ImageOps.contain(img, (WIDTH, HEIGHT), Image.LANCZOS)
@@ -186,6 +189,7 @@ def main() -> None:
     ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
     ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4)")
     ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
+    ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
     ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
     ap.add_argument("--font-size", type=int, default=72)
     ap.add_argument("--position", choices=["bottom", "center", "top"], default="bottom")
@@ -225,7 +229,7 @@ def main() -> None:
             si = next(i for i, (s, e) in enumerate(subs) if s <= mid < e or i == len(subs) - 1)
             if pi not in bases:
                 with Image.open(photos[pi]) as im:
-                    bases[pi] = fit_vertical(im)
+                    bases[pi] = fit_vertical(im, args.fill)
             frame = draw_subtitle(bases[pi], lines[si], font_path, args.font_size, args.position)
             fp = tmpdir / f"seg_{k:04}.png"
             frame.save(fp)
