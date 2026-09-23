@@ -8,6 +8,7 @@
 
 사용 예:
     python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
+    python scripts/make_reel.py --photos ./reel_photos          # 자막 없이 사진만
     python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt \
         --seconds 1.5 --music ./bgm.mp3 --out output/reels/중2_시험대비.mp4
 
@@ -181,7 +182,7 @@ def write_srt(path: Path, lines: list[str], subs: list[tuple[float, float]]) -> 
 def main() -> None:
     ap = argparse.ArgumentParser(description="사진 + 대본 → 인스타 릴스 영상")
     ap.add_argument("--photos", required=True, help="사진 폴더 (파일명 순서대로 사용)")
-    ap.add_argument("--script", required=True, help="대본 txt (한 줄 = 자막 한 줄, #으로 시작하면 무시, \\n 쓰면 강제 줄바꿈)")
+    ap.add_argument("--script", help="대본 txt — 생략하면 자막 없는 영상 (한 줄 = 자막 한 줄, #으로 시작하면 무시, \\n 쓰면 강제 줄바꿈)")
     ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
     ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4)")
     ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
@@ -194,15 +195,16 @@ def main() -> None:
         sys.exit("--seconds 는 0보다 커야 합니다.")
 
     photos = load_photos(Path(args.photos))
-    lines = load_script(Path(args.script))
-    font_path = find_font(args.font)
+    # 대본이 없으면 빈 자막 1줄로 처리 → 자막 없이 사진만 넘어가는 영상
+    lines = load_script(Path(args.script)) if args.script else [""]
+    font_path = find_font(args.font) if args.script else ""
     ffmpeg = find_ffmpeg()
 
     out = Path(args.out) if args.out else Path("output/reels") / f"reel_{datetime.datetime.now():%Y%m%d_%H%M%S}.mp4"
     out.parent.mkdir(parents=True, exist_ok=True)
 
     photo_bounds, subs = build_timeline(len(photos), args.seconds, len(lines))
-    if len(lines) != len(photos):
+    if args.script and len(lines) != len(photos):
         print(f"※ 사진 {len(photos)}장 / 대본 {len(lines)}줄 — 개수가 달라서 자막을 전체 길이에 균등 배분합니다.")
 
     # 사진 경계 + 자막 경계를 합쳐서 "화면이 바뀌는 순간"마다 정지 프레임 1장씩 만든다.
@@ -246,6 +248,9 @@ def main() -> None:
         cmd += ["-t", f"{total:.3f}", "-movflags", "+faststart", str(out)]
         subprocess.run(cmd, check=True)
 
+    if not args.script:
+        print(f"완료: {out}  ({total:.1f}초, 사진 {len(photos)}장, 자막 없음)")
+        return
     srt = out.with_suffix(".srt")
     write_srt(srt, lines, subs)
     print(f"완료: {out}  ({total:.1f}초, 사진 {len(photos)}장, 자막 {len(lines)}줄)")

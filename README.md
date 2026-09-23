@@ -38,12 +38,13 @@
 
 ## 인스타 릴스 만들기
 
-사진을 한 폴더에 넣고(파일명 순서 = 영상 순서), 대본을 한 줄에 자막 하나씩 적은 txt를 준비합니다
+사진을 한 폴더에 넣고(파일명 순서 = 영상 순서), 자막이 필요하면 대본을 한 줄에 자막 하나씩 적은 txt를 준비합니다
 (`config/reel_script.example.txt` 참고).
 
 ```bash
 pip install -r requirements.txt
 python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
+python scripts/make_reel.py --photos ./reel_photos   # 자막 없이 사진만
 ```
 
 - 사진 1장당 1초 (`--seconds 1.5` 처럼 변경 가능), 세로 사진이 아니면 흐린 배경 위에 원본 전체가 보이게 배치
