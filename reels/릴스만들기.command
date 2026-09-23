@@ -2,6 +2,13 @@
 # 맥용: 더블클릭하면 iCloud Drive/릴스 (없으면 바탕화면/릴스) 안의 1번, 2번 … 폴더를 한 번에 영상으로 만듭니다.
 # 결과: 릴스/완성영상/1번.mp4, 2번.mp4 …
 cd "$(dirname "$0")" || exit 1
+# 문서/데스크탑 폴더는 맥이 보호하는 폴더라, 터미널에 권한이 없으면 여기서 막힘 → 알아보기 쉽게 안내
+if ! ls . > /dev/null 2>&1; then
+  echo "터미널에 이 폴더 접근 권한이 없습니다."
+  echo "시스템 설정 → 개인정보 보호 및 보안 → 파일 및 폴더 → 터미널 → '문서 폴더'(와 iCloud Drive)를 켜주세요."
+  echo "(목록에 터미널이 없으면: 전체 디스크 접근 권한 → + → 응용 프로그램/유틸리티/터미널)"
+  read -r -p "엔터를 누르면 닫힙니다."; exit 1
+fi
 # iCloud Drive가 켜져 있으면 iCloud Drive/릴스 (아이패드 파일 앱에서도 보임), 아니면 바탕화면/릴스
 ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 if [ -d "$ICLOUD" ]; then DEFAULT="$ICLOUD/릴스"; else DEFAULT="$HOME/Desktop/릴스"; fi
