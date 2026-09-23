@@ -196,15 +196,19 @@ def srt_time(t: float) -> str:
 
 def write_srt(path: Path, lines: list[str], subs: list[tuple[float, float]]) -> None:
     out = []
-    for i, (text, (start, end)) in enumerate(zip(lines, subs), 1):
+    cues = [(text, span) for text, span in zip(lines, subs) if text]  # 자막 없는 구간은 빼기
+    for i, (text, (start, end)) in enumerate(cues, 1):
         out.append(f"{i}\n{srt_time(start)} --> {srt_time(end)}\n{text.replace(chr(92) + 'n', chr(10))}\n")
     path.write_text("\n".join(out), encoding="utf-8")
 
 
 def make_reel(photos: list[Path], out: Path, lines: list[str], font_path: str, ffmpeg: str, args) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
+    if getattr(args, "first_only", False) and lines != [""]:
+        # 대본 첫 줄을 첫 사진에만 표시 (나머지 사진은 자막 없음)
+        lines = [lines[0]] + [""] * (len(photos) - 1)
     photo_bounds, subs = build_timeline(len(photos), args.seconds, len(lines))
-    if lines != [""] and len(lines) != len(photos):
+    if lines != [""] and len(lines) != len(photos) and not getattr(args, "first_only", False):
         print(f"※ 사진 {len(photos)}장 / 대본 {len(lines)}줄 — 개수가 달라서 자막을 전체 길이에 균등 배분합니다.")
 
     # 사진 경계 + 자막 경계를 합쳐서 "화면이 바뀌는 순간"마다 정지 프레임 1장씩 만든다.
@@ -264,6 +268,7 @@ def main() -> None:
     ap.add_argument("--seconds", type=float, default=1.0, help="사진 1장당 초 (기본 1초)")
     ap.add_argument("--out", help="저장 경로 (기본: output/reels/reel_<시각>.mp4, 폴더 묶음이면 <사진폴더>/완성영상/)")
     ap.add_argument("--music", help="배경음악 파일 (선택, 영상 길이에 맞춰 자르고 페이드아웃)")
+    ap.add_argument("--first-only", action="store_true", help="대본 첫 줄을 첫 사진(처음 1장)에만 표시")
     ap.add_argument("--fill", action="store_true", help="흐린 여백 없이 화면 꽉 채우기 (3:4 사진은 양옆이 조금 잘림)")
     ap.add_argument("--font", help="자막 폰트 경로 (기본: 한글 폰트 자동 탐색)")
     ap.add_argument("--font-size", type=int, default=72)
