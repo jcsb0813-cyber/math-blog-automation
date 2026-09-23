@@ -27,6 +27,7 @@
 - `docs/SETUP_CHECKLIST.md` — 실제로 돌리기 전에 준비해야 할 계정/키 목록 (지금 여기부터 보세요)
 - `config/photo_manifest.example.json` — 동의받은 사진을 태깅해서 관리하는 형식
 - `scripts/topic_research.py` — 네이버 데이터랩/검색 API로 학년별 트렌드 주제 후보 추출
+- `scripts/make_reel.py` — 사진 폴더 + 대본으로 인스타 릴스(1080x1920) 자동 생성 (아래 참고)
 - `.claude/skills/blog-auto/SKILL.md` — Claude Code가 이 전체 파이프라인을 실행할 때 따르는 절차
 - `output/` — 회차별 결과물 (본문 초안, 카드뉴스, 검수 리포트)이 쌓이는 곳
 
@@ -34,3 +35,22 @@
 
 `docs/SETUP_CHECKLIST.md`를 확인하세요. GitHub 계정, 네이버 오픈API 키, Canva 브랜드
 템플릿, 사진 매니페스트 정리가 끝나야 실제로 돌려볼 수 있습니다.
+
+## 인스타 릴스 만들기
+
+사진을 한 폴더에 넣고(파일명 순서 = 영상 순서), 대본을 한 줄에 자막 하나씩 적은 txt를 준비합니다
+(`config/reel_script.example.txt` 참고).
+
+```bash
+pip install -r requirements.txt
+python scripts/make_reel.py --photos ./reel_photos --script ./reel_script.txt
+```
+
+- 사진 1장당 1초 (`--seconds 1.5` 처럼 변경 가능), 세로 사진이 아니면 흐린 배경 위에 원본 전체가 보이게 배치
+- 대본 줄 수 = 사진 장수면 1:1 매칭, 다르면 전체 길이에 균등 배분
+- 자막은 노란색 브랜드 띠로 영상에 새겨지고, 같은 이름의 `.srt`도 함께 저장
+- 배경음악: `--music bgm.mp3` (영상 길이에 맞춰 자르고 마지막 1초 페이드아웃)
+- 자막 위치: `--position bottom|center|top`, 크기: `--font-size 72`
+- 결과물 기본 위치: `output/reels/reel_<날짜_시각>.mp4`
+
+학생 얼굴이 나오는 사진은 블로그와 똑같이 `photo_manifest.json`의 동의 여부를 먼저 확인하세요.
