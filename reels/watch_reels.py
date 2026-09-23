@@ -99,8 +99,8 @@ def main() -> None:
                     marker = done_marker(folder)
                     if marker.exists() and marker.read_text(encoding="utf-8") == content_key(sig):
                         built[folder] = sig
-                if built.get(folder) == sig:
-                    continue
+                if built.get(folder) == sig and out.exists():
+                    continue  # 이미 만든 폴더 (영상을 지우면 다시 만듦)
 
                 now = time.time()
                 if seen.get(folder) != sig:
