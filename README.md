@@ -27,8 +27,24 @@
 - `docs/SETUP_CHECKLIST.md` — 실제로 돌리기 전에 준비해야 할 계정/키 목록 (지금 여기부터 보세요)
 - `config/photo_manifest.example.json` — 동의받은 사진을 태깅해서 관리하는 형식
 - `scripts/topic_research.py` — 네이버 데이터랩/검색 API로 학년별 트렌드 주제 후보 추출
+- `scripts/make_reel.py` — 수학 문제 릴스 MP4(1080x1920) 생성기 (문제 → 카운트다운 → 풀이 → 정답)
+- `examples/reels/` — 릴스 스펙 JSON 예시
+- `.claude/skills/reels-auto/SKILL.md` — `/reels-auto 중2` 로 문제 선정부터 영상까지 자동 생성
 - `.claude/skills/blog-auto/SKILL.md` — Claude Code가 이 전체 파이프라인을 실행할 때 따르는 절차
 - `output/` — 회차별 결과물 (본문 초안, 카드뉴스, 검수 리포트)이 쌓이는 곳
+
+## 수학 릴스 자동 생성
+
+`/reels-auto 중2` 처럼 학년만 말하면 Claude가 문제를 고르고, 풀이를 검산한 뒤 영상을 만듭니다.
+직접 돌릴 때는:
+
+```
+pip install -r requirements.txt
+python scripts/make_reel.py examples/reels/중2_연립방정식.json
+```
+
+결과: `output/<날짜>_<학년>_reel_<단원>/reel.mp4` + `cover.png` + `caption.md`.
+네이버 API나 Canva 없이도 바로 동작합니다.
 
 ## 지금 당장 해야 할 일
 
