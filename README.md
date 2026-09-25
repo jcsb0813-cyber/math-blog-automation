@@ -41,6 +41,7 @@
 ```
 pip install -r requirements.txt
 python scripts/make_reel.py examples/reels/중2_연립방정식.json
+python scripts/make_reel.py examples/reels/엄마도헷갈리는/*.json   # 시리즈 전체 한 번에
 ```
 
 결과: `output/<날짜>_<학년>_reel_<단원>/reel.mp4` + `cover.png` + `caption.md`.

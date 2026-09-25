@@ -524,12 +524,14 @@ def render(spec, out_dir: Path, preview: bool, sound: bool):
 
 
 def write_caption(spec, out_dir: Path):
+    series = [f"#{spec['series'].replace(' ', '')}"] if spec.get("series") else []
     tags = spec.get("hashtags") or [
-        f"#{spec['grade']}수학", f"#{spec['unit'].replace(' ', '')}", "#수학문제", "#수학릴스",
+        f"#{spec['grade']}수학", f"#{spec['unit'].replace(' ', '')}", *series, "#수학문제", "#수학릴스",
         "#민락동수학학원", "#ssenmath", "#의정부수학학원"]
     caption = spec.get("caption") or (
         f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n\n"
-        f"{spec['grade']} {spec['unit']} 단원에서 자주 나오는 유형이에요.\n"
+        f"{spec['problem'].replace(chr(10), ' ')}\n"
+        "아이와 같이 풀어보세요!\n"
         "정답과 풀이는 영상 끝에 있어요. 성공한 친구는 댓글에 손✋~\n\n"
         f"📍 {ACADEMY_NAME}")
     (out_dir / "caption.md").write_text(
@@ -538,21 +540,26 @@ def write_caption(spec, out_dir: Path):
 
 def main():
     ap = argparse.ArgumentParser(description="수학 문제 릴스 MP4 생성")
-    ap.add_argument("spec", type=Path, help="릴스 스펙 JSON 파일")
-    ap.add_argument("--out", type=Path, help="결과 폴더 (기본: output/<날짜>_<학년>_reel_<단원>)")
+    ap.add_argument("specs", type=Path, nargs="+", help="릴스 스펙 JSON 파일 (여러 개면 차례로 생성)")
+    ap.add_argument("--out", type=Path, help="결과 폴더 (스펙 1개일 때만. 기본: output/<날짜>_<학년>_reel_<단원>)")
     ap.add_argument("--preview", action="store_true", help="영상 대신 장면별 PNG만 생성")
     ap.add_argument("--no-sound", action="store_true", help="카운트다운 효과음 없이 생성")
     args = ap.parse_args()
 
-    spec = json.loads(args.spec.read_text(encoding="utf-8"))
-    validate(spec)
+    if args.out and len(args.specs) > 1:
+        sys.exit("--out은 스펙이 1개일 때만 쓸 수 있습니다.")
+    specs = [(path, json.loads(path.read_text(encoding="utf-8"))) for path in args.specs]
+    for _, spec in specs:
+        validate(spec)  # 렌더링 시작 전에 전부 검사
     FONT_PATHS.update(ensure_fonts())
 
-    out = args.out or ROOT / "output" / f"{date.today().isoformat()}_{spec['grade']}_reel_{spec['unit'].replace(' ', '')}"
-    render(spec, out, args.preview, not args.no_sound)
-    if out.resolve() != args.spec.resolve().parent:
-        shutil.copy(args.spec, out / "spec.json")
-    write_caption(spec, out)
+    for path, spec in specs:
+        print(f"[{spec['grade']} · {spec['unit']}]")
+        out = args.out or ROOT / "output" / f"{date.today().isoformat()}_{spec['grade']}_reel_{spec['unit'].replace(' ', '')}"
+        render(spec, out, args.preview, not args.no_sound)
+        if out.resolve() != path.resolve().parent:
+            shutil.copy(path, out / "spec.json")
+        write_caption(spec, out)
 
 
 if __name__ == "__main__":
