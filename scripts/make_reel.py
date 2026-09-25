@@ -43,6 +43,11 @@ FONT_URLS = {
     "extrabold": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-ExtraBold.ttf",
 }
 
+# 컬러 이모지(✋ 등)용. 시스템에 있으면 그걸 쓰고, 없으면 fonts/로 다운로드.
+EMOJI_FONT_URL = "https://raw.githubusercontent.com/google/fonts/main/ofl/notocoloremoji/NotoColorEmoji-Regular.ttf"
+EMOJI_SYSTEM_PATHS = [Path("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"),
+                      Path("/System/Library/Fonts/Apple Color Emoji.ttc")]
+
 W, H = 1080, 1920
 FPS = 30
 MARGIN = 90
@@ -63,7 +68,7 @@ DEFAULT_TIMING = {
     "problem": 4.0,
     "think": 5,  # 카운트다운 초 (정수)
     "hint": 3.0,
-    "step": 3.0,  # 풀이 단계 하나당
+    "step": 5.0,  # 풀이 단계 하나당
     "answer": 3.0,
     "cta": 3.5,
 }
@@ -71,20 +76,23 @@ DEFAULT_TIMING = {
 
 # ---------------------------------------------------------------- fonts
 
+def _download_font(url: str) -> Path:
+    path = FONT_DIR / Path(url).name
+    if not path.exists() or path.stat().st_size < 100_000:
+        FONT_DIR.mkdir(exist_ok=True)
+        print(f"폰트 다운로드: {path.name}")
+        tmp = path.with_suffix(".part")
+        urllib.request.urlretrieve(url, tmp)
+        if tmp.stat().st_size < 100_000:
+            tmp.unlink()
+            sys.exit(f"폰트 다운로드 실패: {url} — 직접 받아서 {path}에 넣어주세요.")
+        tmp.rename(path)
+    return path
+
+
 def ensure_fonts() -> dict[str, Path]:
-    FONT_DIR.mkdir(exist_ok=True)
-    paths = {}
-    for key, url in FONT_URLS.items():
-        path = FONT_DIR / Path(url).name
-        if not path.exists() or path.stat().st_size < 100_000:
-            print(f"폰트 다운로드: {path.name}")
-            tmp = path.with_suffix(".part")
-            urllib.request.urlretrieve(url, tmp)
-            if tmp.stat().st_size < 100_000:
-                tmp.unlink()
-                sys.exit(f"폰트 다운로드 실패: {url} — 직접 받아서 {path}에 넣어주세요.")
-            tmp.rename(path)
-        paths[key] = path
+    paths = {key: _download_font(url) for key, url in FONT_URLS.items()}
+    paths["emoji"] = next((p for p in EMOJI_SYSTEM_PATHS if p.exists()), None) or _download_font(EMOJI_FONT_URL)
     return paths
 
 
@@ -99,6 +107,66 @@ def font(size: int, weight: str = "bold") -> ImageFont.FreeTypeFont:
     return _font_cache[key]
 
 
+# ---------------------------------------------------------------- emoji
+
+def _is_emoji(ch: str) -> bool:
+    cp = ord(ch)
+    return 0x1F000 <= cp <= 0x1FAFF or 0x2600 <= cp <= 0x27BF
+
+
+_emoji_cache: dict[tuple[str, int], Image.Image] = {}
+
+
+def _emoji_image(ch: str, size: int) -> Image.Image:
+    """컬러 이모지는 비트맵 폰트라 109px로 그린 뒤 원하는 크기로 줄인다."""
+    key = (ch, size)
+    if key not in _emoji_cache:
+        efont = ImageFont.truetype(str(FONT_PATHS["emoji"]), 109)
+        canvas = Image.new("RGBA", (160, 160))
+        ImageDraw.Draw(canvas).text((0, 0), ch, font=efont, embedded_color=True)
+        glyph = canvas.crop(canvas.getbbox())
+        h = int(size * 0.95)
+        _emoji_cache[key] = glyph.resize((max(1, glyph.width * h // glyph.height), h), Image.LANCZOS)
+    return _emoji_cache[key]
+
+
+def _runs(line: str):
+    """글자/이모지 구간으로 나눈다. 이모지 변형 선택자(U+FE0F)는 버린다."""
+    line = line.replace("\ufe0f", "")
+    runs, buf = [], ""
+    for ch in line:
+        if _is_emoji(ch):
+            if buf:
+                runs.append((False, buf))
+                buf = ""
+            runs.append((True, ch))
+        else:
+            buf += ch
+    if buf:
+        runs.append((False, buf))
+    return runs
+
+
+def line_width(line: str, fnt: ImageFont.FreeTypeFont) -> float:
+    return sum(_emoji_image(t, fnt.size).width + fnt.size * 0.08 if emo else fnt.getlength(t)
+               for emo, t in _runs(line))
+
+
+def draw_line(draw: ImageDraw.ImageDraw, xy, line: str, fnt: ImageFont.FreeTypeFont, fill, alpha=1.0):
+    x, y = xy
+    for emo, t in _runs(line):
+        if emo:
+            glyph = _emoji_image(t, fnt.size)
+            if alpha < 1.0:
+                glyph = glyph.copy()
+                glyph.putalpha(glyph.getchannel("A").point(lambda a: int(a * max(0.0, alpha))))
+            draw._image.paste(glyph, (int(x + fnt.size * 0.04), int(y + fnt.size * 0.12)), glyph)
+            x += glyph.width + fnt.size * 0.08
+        else:
+            draw.text((x, y), t, font=fnt, fill=fill)
+            x += fnt.getlength(t)
+
+
 # ---------------------------------------------------------------- text helpers
 
 def wrap(text: str, fnt: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
@@ -108,14 +176,14 @@ def wrap(text: str, fnt: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
         line = ""
         for word in para.split(" "):
             candidate = f"{line} {word}" if line else word
-            if fnt.getlength(candidate) <= max_width:
+            if line_width(candidate, fnt) <= max_width:
                 line = candidate
                 continue
             if line:
                 lines.append(line)
             line = ""
             for ch in word:
-                if fnt.getlength(line + ch) > max_width and line:
+                if line_width(line + ch, fnt) > max_width and line:
                     lines.append(line)
                     line = ""
                 line += ch
@@ -131,12 +199,8 @@ def text_block(draw, text, y, size, color=INK, weight="bold", max_width=W - 2 * 
     lh = int(size * line_gap)
     col = _fade(color, alpha, bg or PAPER)
     for i, line in enumerate(lines):
-        w = fnt.getlength(line)
-        if align == "center":
-            x = (W - w) / 2
-        else:
-            x = MARGIN
-        draw.text((x + x_offset, y + i * lh), line, font=fnt, fill=col)
+        x = (W - line_width(line, fnt)) / 2 if align == "center" else MARGIN
+        draw_line(draw, (x + x_offset, y + i * lh), line, fnt, col, alpha)
     return y + len(lines) * lh
 
 
@@ -344,7 +408,7 @@ def scene_cta(spec, t, dur):
     img = Image.new("RGB", (W, H), INK)
     d = ImageDraw.Draw(img)
     p = ease_out(t / 0.6)
-    cta = spec.get("cta", "맞히셨나요?\n댓글로 풀이 남겨주세요!")
+    cta = spec.get("cta", "성공한 친구\n손✋~")
     y = text_block(d, cta, 620 + (1 - p) * 50, 80, color=WHITE, weight="extrabold", alpha=p, bg=INK)
     sub = spec.get("cta_sub", "저장해두고 아이와 함께 풀어보세요")
     y = text_block(d, sub, y + 50, 48, color=(200, 200, 205), alpha=p, bg=INK)
@@ -466,7 +530,7 @@ def write_caption(spec, out_dir: Path):
     caption = spec.get("caption") or (
         f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n\n"
         f"{spec['grade']} {spec['unit']} 단원에서 자주 나오는 유형이에요.\n"
-        "정답과 풀이는 영상 끝에 있어요. 맞히셨다면 댓글로 알려주세요!\n\n"
+        "정답과 풀이는 영상 끝에 있어요. 성공한 친구는 댓글에 손✋~\n\n"
         f"📍 {ACADEMY_NAME}")
     (out_dir / "caption.md").write_text(
         f"# 릴스 캡션\n\n{caption}\n\n{' '.join(tags)}\n", encoding="utf-8")
