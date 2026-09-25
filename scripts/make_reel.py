@@ -181,9 +181,18 @@ def base_frame(spec, bg=PAPER) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     return img, d
 
 
+def _fit_size(text, sizes, max_width):
+    """강제 줄바꿈('\\n')한 줄이 중간에 끊기지 않는 가장 큰 글자 크기. 다 안 되면 첫 크기."""
+    n_lines = len(text.split("\n"))
+    for size in sizes:
+        if len(wrap(text, font(size), max_width)) == n_lines:
+            return size
+    return sizes[0]
+
+
 def problem_card(d, spec, top, alpha=1.0, compact=False):
     """문제 카드. 카드 하단 y를 반환."""
-    size = 66 if not compact else 54
+    size = _fit_size(spec["problem"], (66, 60, 56) if not compact else (54, 50, 46), W - 2 * MARGIN - 80)
     body_h = measure_block(spec["problem"], size, max_width=W - 2 * MARGIN - 80)
     label_h = 90
     bottom = top + label_h + body_h + 70
