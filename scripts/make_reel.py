@@ -48,7 +48,7 @@ FPS = 30
 MARGIN = 90
 
 # 브랜드 기준 (docs/STYLE_GUIDE.md) — 노란색 포인트
-ACADEMY_NAME = "민락동 쎈수학앤논술학원"
+ACADEMY_NAME = "ssen math"  # 릴스에는 영문 브랜드명만 표기
 YELLOW = (255, 212, 0)
 YELLOW_SOFT = (255, 243, 176)
 INK = (28, 28, 30)
@@ -462,7 +462,7 @@ def render(spec, out_dir: Path, preview: bool, sound: bool):
 def write_caption(spec, out_dir: Path):
     tags = spec.get("hashtags") or [
         f"#{spec['grade']}수학", f"#{spec['unit'].replace(' ', '')}", "#수학문제", "#수학릴스",
-        "#민락동수학학원", "#쎈수학앤논술", "#의정부수학학원"]
+        "#민락동수학학원", "#ssenmath", "#의정부수학학원"]
     caption = spec.get("caption") or (
         f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n\n"
         f"{spec['grade']} {spec['unit']} 단원에서 자주 나오는 유형이에요.\n"
