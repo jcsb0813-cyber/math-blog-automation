@@ -68,7 +68,7 @@ DEFAULT_TIMING = {
     "problem": 4.0,
     "think": 5,  # 카운트다운 초 (정수)
     "hint": 3.0,
-    "step": 5.0,  # 풀이 단계 하나당
+    "step": 3.0,  # 풀이 단계 하나당
     "answer": 3.0,
     "cta": 3.5,
 }

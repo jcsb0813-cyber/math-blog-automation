@@ -29,8 +29,8 @@ description: 학년(선택: 단원/문제 수)을 입력받아 "문제 → 생�
 - `steps` (필수) — 문자열 2~5개. 한 단계 = 한 줄 수식 + 짧은 설명. 줄바꿈은 `\n`.
 - `answer` (필수) — 10자 이내 권장 (길면 글자가 작아짐)
 - `answer_note` (선택) — 검산 한 줄 또는 함정 포인트
-- `timing` (선택) — 기본값 `hook 2.5 / problem 4 / think 5 / hint 3 / step 5 / answer 3 / cta 3.5`초.
-  전체 길이 30~50초가 적당 (풀이 단계가 많으면 3~4개로 줄인다).
+- `timing` (선택) — 기본값 `hook 2.5 / problem 4 / think 5 / hint 3 / step 3 / answer 3 / cta 3.5`초.
+  전체 길이 20~40초가 적당.
 - `cta`, `cta_sub`, `caption`, `hashtags` (선택) — 비우면 기본 문구 사용
 
 표기 규칙:
