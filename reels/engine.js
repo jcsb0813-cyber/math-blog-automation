@@ -10,6 +10,7 @@ export const NEON = {
   cyan: "#00fff2",
   magenta: "#ff2fd0",
   yellow: "#fff700",
+  green: "#39ff88",
   purple: "#8a4dff",
   white: "#f4faff",
   black: "#020204",
@@ -306,6 +307,161 @@ export function drawShatter(ctx, sprite, x, y, progress, opts = {}) {
       ctx.restore();
     }
   }
+}
+
+// ---------- 77math 브랜드 레이아웃 헬퍼 ----------
+// 실제 77math 채널 숏폼(외심/단위원 시리즈)의 구조를 그대로 따른다:
+// 좌상단 학년·단원 브레드크럼 + 우상단 회차 번호 + 큰 제목 + 시안 부제 한 줄,
+// 화면 하단 다크 카드(단계 라벨 + 헤드라인 + 보조설명), 맨 아래 진행률 바.
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+export function drawHeader(ctx, { breadcrumb, episode, title, subtitle, alpha = 1, titleY = 220 }) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textBaseline = "middle";
+
+  ctx.textAlign = "left";
+  ctx.font = `600 30px "Pretendard", "Noto Sans KR", sans-serif`;
+  ctx.fillStyle = "rgba(205,220,255,0.7)";
+  ctx.fillText(breadcrumb, 64, 92);
+
+  ctx.textAlign = "right";
+  ctx.shadowColor = NEON.cyan;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = NEON.cyan;
+  ctx.fillText(episode, WIDTH - 64, 92);
+
+  neonText(ctx, title, WIDTH / 2, titleY, { size: 68, color: NEON.white, glow: 14, weight: 800 });
+  neonText(ctx, subtitle, WIDTH / 2, titleY + 92, { size: 32, color: NEON.cyan, glow: 12, weight: 600 });
+  ctx.restore();
+}
+
+export function drawStepCard(ctx, { stepLabel, headline, subtext, alpha = 1, y = HEIGHT - 420, h = 300 }) {
+  if (alpha <= 0.01) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const x = 56, w = WIDTH - 112;
+
+  ctx.fillStyle = "rgba(8,12,24,0.82)";
+  roundRectPath(ctx, x, y, w, h, 30);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(120,170,255,0.22)";
+  ctx.lineWidth = 2;
+  roundRectPath(ctx, x, y, w, h, 30);
+  ctx.stroke();
+
+  neonText(ctx, stepLabel, x + 44, y + 58, { size: 28, color: NEON.cyan, align: "left", glow: 10, weight: 700 });
+
+  const headFont = `800 42px "Pretendard", "Noto Sans KR", sans-serif`;
+  const lines = wrapLines(ctx, headline, w - 88, headFont);
+  let cursorY = y + 126;
+  for (const line of lines) {
+    neonText(ctx, line, x + 44, cursorY, { size: 42, align: "left", color: NEON.white, glow: 6, weight: 800 });
+    cursorY += 52;
+  }
+  if (subtext) {
+    cursorY += 14;
+    ctx.textAlign = "left";
+    ctx.font = `500 27px "Pretendard", "Noto Sans KR", sans-serif`;
+    ctx.fillStyle = "rgba(198,210,232,0.78)";
+    for (const line of subtext.split("\n")) {
+      ctx.fillText(line, x + 44, cursorY);
+      cursorY += 36;
+    }
+  }
+  ctx.restore();
+}
+
+export function drawProgressBar(ctx, progress, { y = HEIGHT - 56, alpha = 1 } = {}) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const x = 64, w = WIDTH - 128;
+  ctx.strokeStyle = "rgba(255,255,255,0.14)";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + w, y);
+  ctx.stroke();
+
+  ctx.strokeStyle = NEON.cyan;
+  ctx.shadowColor = NEON.cyan;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + w * clamp01(progress), y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+export function drawSparkle(ctx, x, y, size, { color = NEON.white, alpha = 1 } = {}) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = size * 1.4;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -size);
+  ctx.quadraticCurveTo(size * 0.12, -size * 0.12, size, 0);
+  ctx.quadraticCurveTo(size * 0.12, size * 0.12, 0, size);
+  ctx.quadraticCurveTo(-size * 0.12, size * 0.12, -size, 0);
+  ctx.quadraticCurveTo(-size * 0.12, -size * 0.12, 0, -size);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// 77math 브랜드 로고: "77"(cyan) + "math"(magenta, italic) + 밑줄 스우시.
+// 실제 채널 아웃트로처럼 좌->우 와이프로 네온사인이 켜지듯 등장한다 (타이핑/파쇄 아님).
+export function drawBrandLogo(ctx, cx, cy, progress) {
+  const p = clamp01(progress);
+  if (p <= 0.001) return;
+  ctx.save();
+  roundRectPath(ctx, cx - 480, cy - 160, 960 * ease.outCubic(p), 320, 8);
+  ctx.clip();
+
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+  ctx.font = `italic 800 128px "Pretendard", "Noto Sans KR", sans-serif`;
+  const num = "77";
+  const word = "math";
+  const numW = ctx.measureText(num).width;
+  ctx.font = `italic 800 112px "Pretendard", "Noto Sans KR", sans-serif`;
+  const wordW = ctx.measureText(word).width;
+  const startX = cx - (numW + 16 + wordW) / 2;
+
+  ctx.font = `italic 800 128px "Pretendard", "Noto Sans KR", sans-serif`;
+  ctx.shadowColor = NEON.cyan;
+  ctx.shadowBlur = 36;
+  ctx.fillStyle = NEON.cyan;
+  ctx.fillText(num, startX, cy + 44);
+
+  ctx.font = `italic 800 112px "Pretendard", "Noto Sans KR", sans-serif`;
+  ctx.shadowColor = NEON.magenta;
+  ctx.shadowBlur = 36;
+  ctx.fillStyle = NEON.magenta;
+  ctx.fillText(word, startX + numW + 16, cy + 44);
+
+  ctx.beginPath();
+  ctx.moveTo(startX + numW - 6, cy + 74);
+  ctx.quadraticCurveTo(startX + numW + wordW * 0.5, cy + 128, startX + numW + wordW + 46, cy + 58);
+  ctx.strokeStyle = NEON.magenta;
+  ctx.lineWidth = 7;
+  ctx.lineCap = "round";
+  ctx.shadowColor = NEON.magenta;
+  ctx.shadowBlur = 26;
+  ctx.stroke();
+  ctx.restore();
 }
 
 // ---------- ambient sparks (fills "화려하고 시선을 뺏는" screen space) ----------

@@ -31,14 +31,20 @@ description: 주제(예 "원뿔곡선", "무한등비급수")를 입력받아 20
 
 ## 2단계 — 스토리보드 작성
 - `reels/storyboards/conic_sections.js`를 템플릿으로 삼아 `reels/storyboards/<topic>.js`를
-  새로 만든다.
-- 재사용 가능한 시각 효과는 전부 `reels/engine.js`의 헬퍼를 쓴다(네온 글로우 선,
-  진행률 기반 선 그리기, 글리치/타이핑 텍스트, 파티클 산산조각 등). 주제 전용 도형
-  로직(예: 원뿔 단면 계산)만 스토리보드 파일 안에 둔다.
-- 아웃트로는 항상 `77math` 타이핑 → 산산조각 효과로 끝낸다(`engine.js`의
-  `makeShatterSprite`/`drawShatter` 재사용).
-- 색상은 `engine.js`의 `NEON` 팔레트(cyan/magenta/yellow/purple/white)를 벗어나지 않는다 —
-  여러 영상이 시리즈로 쌓였을 때 톤이 통일되도록.
+  새로 만든다. 이 파일이 실제 77math 채널 레퍼런스 영상(외심/단위원 시리즈)에 맞춘
+  브랜드 스타일의 기준본이다 — `reels/README.md`의 "브랜드 스타일" 절을 먼저 읽는다.
+- 모든 세그먼트에서 `drawHeader`(제목/부제 고정), `drawStepCard`(그 순간의 헤드라인/보조
+  설명), `drawProgressBar`(전체 진행률)를 호출한다. 카메라는 차분하게 고정하고(계속
+  회전시키지 않는다), 장식은 `drawSparkle` 1~2개 정도로 절제한다.
+- `glitchText`/`drawShatter`/`drawSparks`(화면 가득한 색종이 파티클, RGB 글리치 텍스트)는
+  브랜드에 없는 연출이니 쓰지 않는다 — 재사용 가능한 시각 효과는 `drawHeader`/
+  `drawStepCard`/`drawProgressBar`/`drawBrandLogo`/`drawSparkle` 위주로 쓰고, 주제 전용
+  도형 로직(예: 원뿔 단면 계산)만 스토리보드 파일 안에 둔다.
+- 아웃트로는 항상 `drawBrandLogo`로 끝낸다(시안 `77` + 마젠타 이탤릭 `math` + 스우시
+  밑줄이 좌→우 와이프로 켜지는 연출). 타이핑/산산조각 등 다른 효과로 바꾸지 않는다.
+- 색상은 `engine.js`의 `NEON` 팔레트(cyan/magenta/yellow/green/purple/white)를 벗어나지
+  않는다. 케이스별로 곡선 색이 서로, 그리고 도형 표시선(예: 자르는 평면=노란색) 색과
+  겹치지 않게 배정한다 — 여러 영상이 시리즈로 쌓였을 때 톤이 통일되도록.
 
 ## 3단계 — 미리보기 & 렌더링
 - 빠른 확인: 낮은 fps(예 `--fps 6`)로 먼저 렌더링해서 타이밍/레이아웃이 맞는지 본다.
