@@ -1,6 +1,8 @@
-# 수학학원 블로그 자동화
+# 수학학원 블로그/릴스 자동화
 
-학년만 입력하면 네이버 블로그 발행 직전까지 자동으로 준비해주는 파이프라인입니다.
+학년만 입력하면 네이버 블로그 발행 직전까지 자동으로 준비해주는 파이프라인,
+그리고 주제만 입력하면 틱톡/릴스용 20~25초 수학 숏폼 영상을 만들어주는 파이프라인이
+함께 들어있습니다.
 
 ```
 학년 입력
@@ -22,13 +24,21 @@
 
 ## 폴더 구조
 
+### 블로그 자동화
 - `docs/STYLE_GUIDE.md` — 문체 가이드 (육아맘 + 교육 파워블로거 톤)
 - `docs/COMPLIANCE_CHECKLIST.md` — 발행 전 필수 검수 체크리스트
 - `docs/SETUP_CHECKLIST.md` — 실제로 돌리기 전에 준비해야 할 계정/키 목록 (지금 여기부터 보세요)
 - `config/photo_manifest.example.json` — 동의받은 사진을 태깅해서 관리하는 형식
 - `scripts/topic_research.py` — 네이버 데이터랩/검색 API로 학년별 트렌드 주제 후보 추출
 - `.claude/skills/blog-auto/SKILL.md` — Claude Code가 이 전체 파이프라인을 실행할 때 따르는 절차
-- `output/` — 회차별 결과물 (본문 초안, 카드뉴스, 검수 리포트)이 쌓이는 곳
+
+### 릴스(숏폼) 자동화
+- `reels/README.md` — 네온 모션그래픽 숏폼 렌더링 파이프라인 설명 (지금 여기부터 보세요)
+- `reels/engine.js`, `reels/storyboards/*.js`, `reels/player.html`, `reels/render.mjs`
+- `.claude/skills/reels-auto/SKILL.md` — Claude Code가 주제 → mp4까지 실행할 때 따르는 절차
+
+### 공통
+- `output/` — 회차별 결과물 (블로그 초안/카드뉴스/검수 리포트, 릴스 mp4)이 쌓이는 곳
 
 ## 지금 당장 해야 할 일
 

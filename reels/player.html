@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>reels player</title>
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  #c { display: block; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+  const params = new URLSearchParams(location.search);
+  const storyName = params.get("story") || "conic_sections";
+  const captureMode = params.get("capture") === "1";
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+
+  // scale the canvas down to fit the browser window for live preview only
+  function fitToWindow() {
+    if (captureMode) return;
+    const scale = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    canvas.style.width = 1080 * scale + "px";
+    canvas.style.height = 1920 * scale + "px";
+  }
+  window.addEventListener("resize", fitToWindow);
+  fitToWindow();
+
+  const story = await import(`./storyboards/${storyName}.js`);
+  window.__STORY__ = story;
+
+  // exposed for Playwright's frame-exact capture pipeline
+  window.renderFrame = (t) => story.render(ctx, t);
+  window.__DURATION__ = story.DURATION;
+
+  if (!captureMode) {
+    const start = performance.now();
+    function loop(now) {
+      const t = ((now - start) / 1000) % story.DURATION;
+      story.render(ctx, t);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  }
+</script>
+</body>
+</html>
