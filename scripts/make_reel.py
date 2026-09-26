@@ -245,18 +245,18 @@ def base_frame(spec, bg=PAPER) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     return img, d
 
 
-def _fit_size(text, sizes, max_width):
+def _fit_size(text, sizes, max_width, weight="bold"):
     """강제 줄바꿈('\\n')한 줄이 중간에 끊기지 않는 가장 큰 글자 크기. 다 안 되면 첫 크기."""
     n_lines = len(text.split("\n"))
     for size in sizes:
-        if len(wrap(text, font(size), max_width)) == n_lines:
+        if len(wrap(text, font(size, weight), max_width)) == n_lines:
             return size
     return sizes[0]
 
 
 def problem_card(d, spec, top, alpha=1.0, compact=False):
     """문제 카드. 카드 하단 y를 반환."""
-    size = _fit_size(spec["problem"], (66, 60, 56) if not compact else (54, 50, 46), W - 2 * MARGIN - 80)
+    size = _fit_size(spec["problem"], (66, 60, 56, 52) if not compact else (54, 50, 46, 42), W - 2 * MARGIN - 80)
     body_h = measure_block(spec["problem"], size, max_width=W - 2 * MARGIN - 80)
     label_h = 90
     bottom = top + label_h + body_h + 70
@@ -271,6 +271,31 @@ def problem_card(d, spec, top, alpha=1.0, compact=False):
     return bottom
 
 
+def draw_choices(d, spec, top, alpha=1.0, reveal=False):
+    """A/B/C 보기 버튼 한 줄. reveal=True면 정답만 노랗게, 나머지는 흐리게. 하단 y를 반환."""
+    choices = spec.get("choices")
+    if not choices:
+        return top
+    n, gap, h = len(choices), 28, 150
+    w = (W - 2 * MARGIN - gap * (n - 1)) / n
+    for i, text in enumerate(choices):
+        x0 = MARGIN + i * (w + gap)
+        correct = i == spec["correct"]
+        if reveal:
+            fill, border, ink = (YELLOW, INK, INK) if correct else ((240, 236, 222), (215, 210, 195), (170, 168, 160))
+        else:
+            fill, border, ink = WHITE, INK, INK
+        d.rounded_rectangle((x0, top, x0 + w, top + h), radius=30, fill=_fade(fill, alpha, PAPER),
+                            outline=_fade(border, alpha, PAPER), width=4)
+        letter = "ABCD"[i]
+        fl = font(34, "extrabold")
+        d.text((x0 + (w - fl.getlength(letter)) / 2, top + 16), letter, font=fl, fill=_fade(GRAY if not correct or not reveal else INK, alpha, PAPER))
+        size = next((sz for sz in (54, 48, 42, 36) if font(sz, "extrabold").getlength(text) <= w - 30), 36)
+        fv = font(size, "extrabold")
+        d.text((x0 + (w - fv.getlength(text)) / 2, top + 62 + (54 - size) / 2), text, font=fv, fill=_fade(ink, alpha, PAPER))
+    return top + h
+
+
 # ---------------------------------------------------------------- scenes
 # 각 scene 함수는 (spec, t, dur) -> Image 형태. t는 장면 시작부터의 초.
 
@@ -279,11 +304,11 @@ def scene_hook(spec, t, dur):
     d = ImageDraw.Draw(img)
     p = ease_out(t / 0.5)
     hook = spec.get("hook", "이 문제, 풀 수 있나요?")
-    size = 104
+    size = _fit_size(hook, (104, 96, 88, 80), W - 2 * MARGIN, "extrabold")
     bh = measure_block(hook, size, "extrabold")
     y = (H - bh) / 2 - 120 + (1 - p) * 80
     text_block(d, hook, y, size, weight="extrabold", alpha=p, bg=YELLOW)
-    sub = f"{spec['grade']} {spec['unit']}"
+    sub = spec.get("hook_tag", f"{spec['grade']} {spec['unit']}")
     fnt = font(52)
     sw = fnt.getlength(sub)
     sy = y + bh + 60
@@ -298,20 +323,26 @@ def scene_problem(spec, t, dur):
     p = ease_out(t / 0.6)
     top = 300 + (1 - p) * 60
     bottom = problem_card(d, spec, top, alpha=p)
+    if spec.get("choices"):
+        bottom = draw_choices(d, spec, bottom + 40, alpha=ease_out((t - 0.5) / 0.5))
     if t > 1.0:
         q = ease_out((t - 1.0) / 0.5)
-        text_block(d, "잠깐 멈추고 풀어보세요!", bottom + 80, 60, color=GRAY, alpha=q)
+        default = "댓글에 먼저 골라두세요!\n정답은 마지막에 공개" if spec.get("choices") else "잠깐 멈추고 풀어보세요!"
+        text_block(d, spec.get("teaser", default), bottom + 80, 56, color=GRAY, alpha=q)
     return img
 
 
 def scene_think(spec, t, dur):
     img, d = base_frame(spec)
     bottom = problem_card(d, spec, 300, compact=True)
+    bottom = draw_choices(d, spec, bottom + 30)
     total = dur
     remain = max(0, math.ceil(total - t))
     # 원형 타이머
-    cx, cy = W / 2, bottom + (H - 330 - bottom) / 2
-    r = min(230, (H - 330 - bottom) / 2 - 40)
+    # 타이머 + "생각할 시간" 라벨이 하단 학원명(H - 330)과 겹치지 않도록 남은 공간에 맞춘다
+    avail = H - 360 - bottom - 100
+    r = max(100, min(230, avail / 2 - 20))
+    cx, cy = W / 2, bottom + 20 + avail / 2
     d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=(230, 225, 205), width=28)
     frac = min(1.0, t / total)
     d.arc((cx - r, cy - r, cx + r, cy + r), start=-90, end=-90 + 360 * (1 - frac),
@@ -334,6 +365,7 @@ def scene_think(spec, t, dur):
 def scene_hint(spec, t, dur):
     img, d = base_frame(spec)
     bottom = problem_card(d, spec, 300, compact=True)
+    bottom = draw_choices(d, spec, bottom + 30)
     p = ease_out(t / 0.5)
     top = bottom + 80 + (1 - p) * 40
     hint_h = measure_block(spec["hint"], 58, max_width=W - 2 * MARGIN - 80)
@@ -398,9 +430,11 @@ def scene_answer(spec, t, dur):
         yy = y0 + i * lh
         highlight(d, x - 30, yy + size * 0.45, x + w + 30, yy + size * 1.15, progress=(t - 0.3) / 0.6)
         d.text((x, yy), line, font=fnt, fill=_fade(INK, p, PAPER))
+    y = y0 + len(lines) * lh + 80
     if spec.get("answer_note"):
-        text_block(d, spec["answer_note"], y0 + len(lines) * lh + 80, 54, color=GRAY,
-                   alpha=ease_out((t - 0.8) / 0.5))
+        y = text_block(d, spec["answer_note"], y, 54, color=GRAY, alpha=ease_out((t - 0.8) / 0.5))
+    if spec.get("choices"):
+        draw_choices(d, spec, y + 70, alpha=ease_out((t - 0.5) / 0.5), reveal=True)
     return img
 
 
@@ -481,6 +515,11 @@ def validate(spec):
         sys.exit("steps는 문자열 리스트여야 합니다.")
     if len(spec["steps"]) > 5:
         sys.exit("풀이 단계는 5개 이하로 줄여주세요 (릴스는 짧아야 합니다).")
+    if spec.get("choices"):
+        if not 2 <= len(spec["choices"]) <= 4:
+            sys.exit("choices는 2~4개여야 합니다.")
+        if not isinstance(spec.get("correct"), int) or not 0 <= spec["correct"] < len(spec["choices"]):
+            sys.exit("choices를 쓰면 correct(정답 보기 번호, 0부터)가 필요합니다.")
 
 
 def render(spec, out_dir: Path, preview: bool, sound: bool):
@@ -531,7 +570,9 @@ def write_caption(spec, out_dir: Path):
     caption = spec.get("caption") or (
         f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n\n"
         f"{spec['problem'].replace(chr(10), ' ')}\n"
-        "아이와 같이 풀어보세요!\n"
+        + ("".join(f"{'ABCD'[i]}) {c}   " for i, c in enumerate(spec.get("choices", []))).rstrip()
+           + "\n정답을 먼저 댓글로 골라주세요!\n" if spec.get("choices") else "")
+        + "아이와 같이 풀어보세요!\n"
         "정답과 풀이는 영상 끝에 있어요. 성공한 친구는 댓글에 손✋~\n\n"
         f"📍 {ACADEMY_NAME}")
     (out_dir / "caption.md").write_text(
