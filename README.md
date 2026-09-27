@@ -44,7 +44,8 @@ python scripts/make_reel.py examples/reels/중2_연립방정식.json
 python scripts/make_reel.py examples/reels/엄마도헷갈리는/*.json   # 시리즈 전체 한 번에
 ```
 
-결과: `output/<날짜>_<학년>_reel_<단원>/reel.mp4` + `cover.png` + `caption.md`.
+결과: `쎈릴스/<날짜>/<문제 이름>/` 폴더에 `reel.mp4`(영상) + `cover.png`(커버) + `설명.md`(정답 요약·업로드용 캡션).
+날짜 폴더의 `목록.md`에서 그날 만든 릴스를 한눈에 볼 수 있습니다.
 네이버 API나 Canva 없이도 바로 동작합니다.
 
 ## 지금 당장 해야 할 일

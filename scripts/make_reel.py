@@ -7,15 +7,15 @@
 Claude가 `/reels-auto` 스킬로 스펙을 작성하고 이 스크립트를 실행합니다.
 
 사용법:
-  python scripts/make_reel.py examples/reels/중2_일차방정식.json
-  python scripts/make_reel.py spec.json --out output/2026-09-25_중2_reel
-  python scripts/make_reel.py spec.json --preview   # 영상 없이 장면별 PNG만 빠르게 확인
+  python scripts/make_reel.py examples/reels/화제의문제/01_초2_천의자리덧셈.json
+  python scripts/make_reel.py examples/reels/화제의문제/*.json   # 여러 개 한 번에
+  python scripts/make_reel.py spec.json --preview   # 영상 없이 장면별 PNG만 (output/preview/)
 
-결과물 (--out 폴더):
+결과물 (쎈릴스/<오늘 날짜>/<스펙 파일 이름>/, 저장소에 함께 올림):
   reel.mp4     인스타그램/유튜브 쇼츠 업로드용 영상
   cover.png    릴스 커버(썸네일) 이미지
-  caption.md   게시글 캡션 + 해시태그
-  spec.json    사용한 스펙 사본 (재생성용)
+  설명.md      제목·정답 요약 + 업로드용 캡션과 해시태그
+날짜 폴더의 목록.md에 그날 만든 릴스가 폴더 이름순으로 정리됩니다.
 
 필요 패키지: pillow, imageio-ffmpeg (requirements.txt)
 한글 폰트(나눔고딕)는 처음 실행할 때 fonts/ 폴더로 자동 다운로드합니다.
@@ -24,7 +24,6 @@ Claude가 `/reels-auto` 스킬로 스펙을 작성하고 이 스크립트를 실
 import argparse
 import json
 import math
-import shutil
 import struct
 import subprocess
 import sys
@@ -38,6 +37,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 FONT_DIR = ROOT / "fonts"
+REELS_DIR = ROOT / "쎈릴스"  # 완성 영상: 쎈릴스/<날짜>/<스펙 이름>/ (저장소에 함께 올림)
 FONT_URLS = {
     "bold": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-Bold.ttf",
     "extrabold": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-ExtraBold.ttf",
@@ -562,7 +562,8 @@ def render(spec, out_dir: Path, preview: bool, sound: bool):
     print(f"완료: {out_dir / 'reel.mp4'}  ({total:.1f}초)")
 
 
-def write_caption(spec, out_dir: Path):
+def make_caption(spec) -> str:
+    """인스타/쇼츠에 그대로 붙여넣는 게시글 캡션 + 해시태그."""
     series = [f"#{spec['series'].replace(' ', '')}"] if spec.get("series") else []
     tags = spec.get("hashtags") or [
         f"#{spec['grade']}수학", f"#{spec['unit'].replace(' ', '')}", *series, "#수학문제", "#수학릴스",
@@ -575,14 +576,39 @@ def write_caption(spec, out_dir: Path):
         + "아이와 같이 풀어보세요!\n"
         "정답과 풀이는 영상 끝에 있어요. 성공한 친구는 댓글에 손✋~\n\n"
         f"📍 {ACADEMY_NAME}")
-    (out_dir / "caption.md").write_text(
-        f"# 릴스 캡션\n\n{caption}\n\n{' '.join(tags)}\n", encoding="utf-8")
+    return f"{caption}\n\n{' '.join(tags)}"
+
+
+def write_description(spec, out_dir: Path):
+    """원장님이 보는 설명 파일: 요약 + 복사용 캡션."""
+    title = spec.get("hook", spec["unit"]).replace("\n", " ")
+    total = sum(d for _, _, d in build_timeline(spec))
+    (out_dir / "설명.md").write_text(
+        f"# {title}\n\n"
+        f"- 학년/단원: {spec['grade']} · {spec['unit']}\n"
+        f"- 정답: {spec['answer']}\n"
+        f"- 영상: reel.mp4 ({total:.0f}초) / 커버: cover.png\n\n"
+        f"## 업로드용 캡션 (아래를 그대로 복사해서 붙여넣기)\n\n{make_caption(spec)}\n",
+        encoding="utf-8")
+
+
+def write_index(date_dir: Path):
+    """날짜 폴더의 목록.md — 그날 만든 릴스를 업로드 순서(폴더 이름순)로 정리."""
+    rows = []
+    for d in sorted(p for p in date_dir.iterdir() if (p / "설명.md").exists()):
+        lines = (d / "설명.md").read_text(encoding="utf-8").splitlines()
+        title = lines[0].lstrip("# ")
+        answer = next((l.split(":", 1)[1].strip() for l in lines if l.startswith("- 정답:")), "")
+        rows.append(f"| {d.name} | {title} | {answer} |")
+    (date_dir / "목록.md").write_text(
+        f"# {date_dir.name} 릴스 목록\n\n| 폴더 | 제목 | 정답 |\n|---|---|---|\n" + "\n".join(rows) + "\n",
+        encoding="utf-8")
 
 
 def main():
     ap = argparse.ArgumentParser(description="수학 문제 릴스 MP4 생성")
     ap.add_argument("specs", type=Path, nargs="+", help="릴스 스펙 JSON 파일 (여러 개면 차례로 생성)")
-    ap.add_argument("--out", type=Path, help="결과 폴더 (스펙 1개일 때만. 기본: output/<날짜>_<학년>_reel_<단원>)")
+    ap.add_argument("--out", type=Path, help="결과 폴더 (스펙 1개일 때만. 기본: 쎈릴스/<날짜>/<스펙 파일 이름>)")
     ap.add_argument("--preview", action="store_true", help="영상 대신 장면별 PNG만 생성")
     ap.add_argument("--no-sound", action="store_true", help="카운트다운 효과음 없이 생성")
     args = ap.parse_args()
@@ -596,11 +622,18 @@ def main():
 
     for path, spec in specs:
         print(f"[{spec['grade']} · {spec['unit']}]")
-        out = args.out or ROOT / "output" / f"{date.today().isoformat()}_{spec['grade']}_reel_{spec['unit'].replace(' ', '')}"
+        if args.out:
+            out = args.out
+        elif args.preview:  # 미리보기는 저장소에 올리지 않는 output/에
+            out = ROOT / "output" / "preview" / path.stem
+        else:
+            out = REELS_DIR / date.today().isoformat() / path.stem
         render(spec, out, args.preview, not args.no_sound)
-        if out.resolve() != path.resolve().parent:
-            shutil.copy(path, out / "spec.json")
-        write_caption(spec, out)
+        if args.preview:
+            continue
+        write_description(spec, out)
+        if out.parent.parent == REELS_DIR:
+            write_index(out.parent)
 
 
 if __name__ == "__main__":
