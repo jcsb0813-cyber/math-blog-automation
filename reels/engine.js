@@ -358,6 +358,15 @@ export function drawSafeZoneGuide(ctx) {
   ctx.restore();
 }
 
+// 폰트 크기를 그대로 쓰면 안전영역 폭을 넘는 긴 문자열(특히 자동 생성된 제목)이
+// 있을 수 있어서, 측정 후 필요하면 줄인다(최소 크기까지).
+function fitFontSize(ctx, text, baseSize, maxWidth, weight, minSize) {
+  ctx.font = `${weight} ${baseSize}px "Pretendard", "Noto Sans KR", sans-serif`;
+  const w = ctx.measureText(text).width;
+  if (w <= maxWidth) return baseSize;
+  return Math.max(minSize, Math.floor(baseSize * (maxWidth / w)));
+}
+
 export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY = 220 }) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -368,8 +377,11 @@ export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY
   ctx.fillStyle = "rgba(205,220,255,0.7)";
   ctx.fillText(breadcrumb, 64, 92);
 
-  neonText(ctx, title, WIDTH / 2, titleY, { size: 68, color: NEON.white, glow: 14, weight: 800 });
-  neonText(ctx, subtitle, WIDTH / 2, titleY + 92, { size: 32, color: NEON.cyan, glow: 12, weight: 600 });
+  const maxTextW = SAFE_X1 - SAFE_X0 - 60;
+  const titleSize = fitFontSize(ctx, title, 68, maxTextW, 800, 38);
+  const subtitleSize = fitFontSize(ctx, subtitle, 32, maxTextW, 600, 22);
+  neonText(ctx, title, WIDTH / 2, titleY, { size: titleSize, color: NEON.white, glow: 14, weight: 800 });
+  neonText(ctx, subtitle, WIDTH / 2, titleY + 92, { size: subtitleSize, color: NEON.cyan, glow: 12, weight: 600 });
   ctx.restore();
 }
 
