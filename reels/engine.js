@@ -517,3 +517,32 @@ export function drawSparks(ctx, t, count, colorList = [NEON.cyan, NEON.magenta, 
     ctx.restore();
   }
 }
+
+// 한 순간을 강조하는 방사형 파티클 폭발("화려한" 포인트 연출용).
+// progress 0..1: 0=발생, 1=완전히 흩어져 사라짐. 매 프레임 t가 아니라 progress로만
+// 결정되는 순수 함수라 몇 번을 다시 그려도 항상 같은 궤적이 나온다.
+export function drawBurst(ctx, cx, cy, progress, opts = {}) {
+  const { colors = [NEON.cyan, NEON.magenta, NEON.yellow, NEON.green], count = 22, maxDist = 260, seed = 3 } = opts;
+  const p = clamp01(progress);
+  if (p <= 0.001 || p >= 0.999) return;
+  const rng = makeRng(seed);
+  const fade = 1 - ease.inOutQuad(p);
+  const dist = ease.outCubic(p) * maxDist;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + (rng() - 0.5) * 0.35;
+    const d = dist * (0.65 + rng() * 0.6);
+    const x = cx + Math.cos(angle) * d;
+    const y = cy + Math.sin(angle) * d;
+    const size = 3 + rng() * 3.2;
+    const color = colors[i % colors.length];
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
