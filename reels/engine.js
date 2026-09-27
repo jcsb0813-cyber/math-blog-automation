@@ -620,3 +620,31 @@ export function drawFlare(ctx, cx, cy, radius, alpha, color = NEON.white) {
   ctx.fill();
   ctx.restore();
 }
+
+// 팩트체크형 스토리보드용 "도장" 효과 — 살짝 기울어진 테두리 텍스트가 통통 튀며
+// 찍히듯 등장한다("사실"/"과장" 같은 판정에 쓴다).
+export function drawStamp(ctx, cx, cy, text, color, progress, opts = {}) {
+  const p = clamp01(progress);
+  if (p <= 0.001) return;
+  const { size = 54, rotation = -0.16 } = opts;
+  const scale = ease.outBack(p);
+  ctx.save();
+  ctx.globalAlpha = clamp01(p * 1.4);
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  ctx.scale(Math.max(0.001, scale), Math.max(0.001, scale));
+  ctx.font = `900 ${size}px "Pretendard", "Noto Sans KR", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const textW = ctx.measureText(text).width;
+  const padX = 30, padY = 20;
+  const w = textW + padX * 2, h = size + padY * 2;
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 22;
+  ctx.strokeRect(-w / 2, -h / 2, w, h);
+  ctx.fillStyle = color;
+  ctx.fillText(text, 0, 3);
+  ctx.restore();
+}

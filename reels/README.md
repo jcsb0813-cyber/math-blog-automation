@@ -131,6 +131,11 @@ node reels/render.mjs --story conic_sections --out output/reels/conic_sections.m
   (AI가 생성한 레퍼런스 영상은 사각형이 서로 안 맞게 겹치고 라벨 숫자도 피보나치가 아니었다
   — `buildFibUnitSquares`/`ARC_RULES`가 왜 정확한 좌표인지는 파일 상단 주석과 소스의
   유도 과정 설명 참고)
+- `fibonacci_factcheck` — `fibonacci` 편의 클리프행어에 답하는 후속편. 4가지 유명한 주장을
+  "사실/과장" 도장(`drawStamp`)으로 판정한다: 해바라기 씨앗(사실)·앵무조개 황금나선(과장,
+  실측 성장비 ≈1.3)·파르테논 신전 황금비 설계(과장, 근거 없음)·식물 잎차례 137.5° 황금각
+  (사실, 옥신 확산 메커니즘). 결론에서 "신비가 아니라 최적의 공간 배치"라는 진짜 이유를
+  설명 → 클리프행어: "그럼 '황금비 얼굴'은 진짜 있을까?"
 
 ## "화려하게" 만들 때 (더 많은 장면 / 더 강한 포인트가 필요할 때)
 
@@ -147,6 +152,9 @@ node reels/render.mjs --story conic_sections --out output/reels/conic_sections.m
 - **`drawFlare` + `drawBurst`로 아웃트로를 더 폭발적으로**: 로고가 나타나기 직전에
   밝은 방사형 플레어(`drawFlare`)를 깔고 그 위에 큰 `drawBurst`(count 40+, maxDist 400+)를
   터뜨리면 레퍼런스 영상 같은 "빛 폭발" 느낌이 난다 — `fibonacci.js`의 `renderOutro` 참고.
+- **팩트체크/판정형 콘텐츠는 `drawStamp`를 쓴다**: 주장 텍스트 → 기울어진 도장이 통통
+  튀며 "사실"/"과장" 같은 판정을 찍는 연출. `fibonacci_factcheck.js`가 예시다 — 속설을
+  하나씩 검증하는 포맷이면 이 패턴을 재사용하세요.
 - **`drawBurst`로 순간을 강조한다**: 공식이 완성되는 순간, 숫자가 확정되는 순간처럼
   "짜릿한 포인트"에만 방사형 파티클을 짧게 터뜨린다. 화면 전체에 계속 뿌리는
   `drawSparks`/색종이 효과와 달리, `drawBurst`는 0.3~0.6초짜리 순간 연출이라 차분한
