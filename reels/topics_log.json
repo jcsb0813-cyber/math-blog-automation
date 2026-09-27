@@ -129,6 +129,30 @@
       "trendSource": "viral",
       "cliffhanger_from": null,
       "cliffhanger_to": "그럼 어떤 방식이 진짜 더 효과적일까?"
+    },
+    {
+      "id": "election_impossibility",
+      "file": "reels/storyboards/election_impossibility.js",
+      "series": "daily-issues",
+      "seriesIndex": 4,
+      "date": "2026-09-27",
+      "topic_ko": "완벽한 선거는 수학적으로 불가능하다 (사회선택이론 불가능성 정리)",
+      "techniques": ["trilemma-triangle-reveal", "real-data-bar-comparison"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "bonnet_twin_torus",
+      "file": "reels/storyboards/bonnet_twin_torus.js",
+      "series": "daily-issues",
+      "seriesIndex": 5,
+      "date": "2026-09-27",
+      "topic_ko": "150년 된 기하학 법칙(본네의 정리)이 깨졌다",
+      "techniques": ["ring-tickmark-reveal", "shape-morph-same-measurements"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
     }
   ]
 }
