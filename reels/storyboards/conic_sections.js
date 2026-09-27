@@ -9,7 +9,7 @@ import {
   WIDTH, HEIGHT, NEON, ease, segProgress, clamp01,
   drawBackground, glowStroke, glowPolylineReveal, sampleParametric,
   project3D, neonText, drawSparkle, drawHeader, drawStepCard, drawProgressBar,
-  drawBrandLogo,
+  drawBrandLogo, SAFE_CX, SAFE_Y1,
 } from "../engine.js";
 
 // ---------- 타임라인 (초) ----------
@@ -35,7 +35,9 @@ const HEADER = {
 // ---------- 원뿔(더블콘) 지오메트리 — 항상 같은 고정 시점 ----------
 const K = 0.7;   // 반지름/높이 비율 = 원뿔 반각의 tan
 const H = 260;   // 콘 절반 높이 (3D unit)
-const XF = { rotY: 0.5, tiltX: 0.58, scale: 2.25, perspective: 1200, cx: WIDTH / 2, cy: 980 };
+// cx는 WIDTH/2가 아니라 SAFE_CX: 업로드 시 우측 좋아요/댓글/공유 아이콘 열에
+// 다이어그램이 가려지지 않도록 안전영역 중심으로 그린다.
+const XF = { rotY: 0.5, tiltX: 0.58, scale: 2.0, perspective: 1200, cx: SAFE_CX, cy: SAFE_Y1 * 0.6 };
 
 function buildConeGeometry() {
   const levels = 5;

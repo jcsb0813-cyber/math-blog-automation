@@ -6,6 +6,23 @@
 export const WIDTH = 1080;
 export const HEIGHT = 1920;
 
+// ---------- 플랫폼 안전 영역 (TikTok / Reels / Shorts 공통) ----------
+// 업로드하면 앱 자체 UI(우측 좋아요·댓글·공유 아이콘 열, 하단 계정명+캡션+
+// 진행바)가 영상 위에 고정으로 덮인다. 이 영역엔 절대 핵심 콘텐츠를 놓지 않는다.
+// 수치는 세 플랫폼의 통상적인 세이프존 가이드를 기준으로 보수적으로 잡았다.
+export const SAFE = {
+  top: 40,
+  bottom: 330,   // 계정명 + 캡션 + 음원 정보 + 자체 진행바
+  right: 170,    // 좋아요/댓글/공유/북마크 아이콘 열
+  left: 40,
+};
+// 콘텐츠(다이어그램, 카드)가 실제로 놓여도 되는 영역
+export const SAFE_X0 = SAFE.left;
+export const SAFE_X1 = WIDTH - SAFE.right;
+export const SAFE_Y0 = SAFE.top;
+export const SAFE_Y1 = HEIGHT - SAFE.bottom;
+export const SAFE_CX = (SAFE_X0 + SAFE_X1) / 2; // 다이어그램은 이 x를 중심으로 그린다 (WIDTH/2 아님)
+
 export const NEON = {
   cyan: "#00fff2",
   magenta: "#ff2fd0",
@@ -324,6 +341,23 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+// 개발용: 안전영역 경계를 그려서 앱 UI에 가려지는지 눈으로 확인한다.
+// player.html에 ?safe=1을 붙였을 때만 호출되고, render.mjs(실제 캡처)는 이 쿼리를
+// 절대 붙이지 않으므로 최종 mp4에는 절대 나오지 않는다.
+export function drawSafeZoneGuide(ctx) {
+  ctx.save();
+  ctx.setLineDash([16, 10]);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(255,64,64,0.9)";
+  ctx.strokeRect(SAFE_X0, SAFE_Y0, SAFE_X1 - SAFE_X0, SAFE_Y1 - SAFE_Y0);
+  ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(255,64,64,0.95)";
+  ctx.font = `700 24px "Pretendard", "Noto Sans KR", sans-serif`;
+  ctx.textAlign = "left";
+  ctx.fillText("SAFE ZONE — 이 밖은 앱 UI에 가려짐", SAFE_X0, SAFE_Y0 - 16);
+  ctx.restore();
+}
+
 export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY = 220 }) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -339,11 +373,13 @@ export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY
   ctx.restore();
 }
 
-export function drawStepCard(ctx, { stepLabel, headline, subtext, alpha = 1, y = HEIGHT - 420, h = 300 }) {
+export function drawStepCard(ctx, { stepLabel, headline, subtext, alpha = 1, y, h = 280 } = {}) {
   if (alpha <= 0.01) return;
   ctx.save();
   ctx.globalAlpha = alpha;
-  const x = 56, w = WIDTH - 112;
+  const x = SAFE_X0;
+  const w = SAFE_X1 - SAFE_X0 - 20; // 우측 아이콘 열 앞에서 멈춘다
+  if (y === undefined) y = SAFE_Y1 - 20 - h; // 하단 캡션/진행바 위에서 멈춘다
 
   ctx.fillStyle = "rgba(8,12,24,0.82)";
   roundRectPath(ctx, x, y, w, h, 30);
@@ -375,10 +411,11 @@ export function drawStepCard(ctx, { stepLabel, headline, subtext, alpha = 1, y =
   ctx.restore();
 }
 
-export function drawProgressBar(ctx, progress, { y = HEIGHT - 56, alpha = 1 } = {}) {
+// 하단은 플랫폼 캡션/진행바에 가려지므로, 진행률 바는 헤더 바로 아래(상단)에 둔다.
+export function drawProgressBar(ctx, progress, { y = 372, alpha = 1 } = {}) {
   ctx.save();
   ctx.globalAlpha = alpha;
-  const x = 64, w = WIDTH - 128;
+  const x = SAFE_X0, w = SAFE_X1 - SAFE_X0 - 20;
   ctx.strokeStyle = "rgba(255,255,255,0.14)";
   ctx.lineWidth = 5;
   ctx.lineCap = "round";

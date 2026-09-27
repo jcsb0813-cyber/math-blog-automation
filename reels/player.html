@@ -14,6 +14,7 @@
   const params = new URLSearchParams(location.search);
   const storyName = params.get("story") || "conic_sections";
   const captureMode = params.get("capture") === "1";
+  const safeDebug = params.get("safe") === "1";
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
@@ -29,17 +30,25 @@
   fitToWindow();
 
   const story = await import(`./storyboards/${storyName}.js`);
+  const { drawSafeZoneGuide } = await import("./engine.js");
   window.__STORY__ = story;
 
+  // ?safe=1 로만 켜지는 개발용 오버레이 — render.mjs(실제 캡처)는 이 쿼리를 붙이지
+  // 않으므로 최종 mp4에는 나오지 않는다.
+  function renderWithGuide(t) {
+    story.render(ctx, t);
+    if (safeDebug) drawSafeZoneGuide(ctx);
+  }
+
   // exposed for Playwright's frame-exact capture pipeline
-  window.renderFrame = (t) => story.render(ctx, t);
+  window.renderFrame = (t) => renderWithGuide(t);
   window.__DURATION__ = story.DURATION;
 
   if (!captureMode) {
     const start = performance.now();
     function loop(now) {
       const t = ((now - start) / 1000) % story.DURATION;
-      story.render(ctx, t);
+      renderWithGuide(t);
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);

@@ -45,13 +45,23 @@ description: 주제(예 "원뿔곡선", "무한등비급수")를 입력받아 20
 - 색상은 `engine.js`의 `NEON` 팔레트(cyan/magenta/yellow/green/purple/white)를 벗어나지
   않는다. 케이스별로 곡선 색이 서로, 그리고 도형 표시선(예: 자르는 평면=노란색) 색과
   겹치지 않게 배정한다 — 여러 영상이 시리즈로 쌓였을 때 톤이 통일되도록.
+- **다이어그램 중심은 `WIDTH/2`가 아니라 `SAFE_CX`를 쓴다.** 업로드하면 우측에
+  좋아요/댓글/공유 아이콘 열이 고정으로 덮이기 때문이다 (`reels/README.md`의
+  "플랫폼 안전 영역" 절 참고). `drawStepCard`/`drawProgressBar`는 기본값 자체가 이미
+  안전 영역 기준이라 위치를 직접 지정하지 않는 한 자동으로 안전하다.
 
 ## 3단계 — 미리보기 & 렌더링
 - 빠른 확인: 낮은 fps(예 `--fps 6`)로 먼저 렌더링해서 타이밍/레이아웃이 맞는지 본다.
   ```
   node reels/render.mjs --story <topic> --out output/reels/<topic>_preview.mp4 --fps 6
   ```
-- 문제 없으면 최종 화질로 렌더링한다.
+- **안전 영역 확인**: 도형이 화면을 넓게 쓰는 주제라면(예: 크기가 변하는 궤도, 큰 도형)
+  `--safe` 플래그로 한 번 더 렌더링해서 빨간 점선 가이드 밖으로 아무것도 안 나가는지
+  확인한다. 나가면 해당 storyboard의 중심 좌표/스케일 상수를 줄여서 다시 확인한다.
+  ```
+  node reels/render.mjs --story <topic> --out /tmp/<topic>_safe.mp4 --fps 5 --safe
+  ```
+- 문제 없으면(`--safe` 없이) 최종 화질로 렌더링한다.
   ```
   node reels/render.mjs --story <topic> --out output/reels/<topic>.mp4 --fps 30
   ```

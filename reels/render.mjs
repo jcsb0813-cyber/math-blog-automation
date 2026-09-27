@@ -38,12 +38,13 @@ function serveReelsDir() {
 }
 
 function parseArgs(argv) {
-  const out = { fps: 30 };
+  const out = { fps: 30, safe: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--story") out.story = argv[++i];
     else if (a === "--out") out.out = argv[++i];
     else if (a === "--fps") out.fps = Number(argv[++i]);
+    else if (a === "--safe") out.safe = true; // 안전영역 가이드를 프레임에 그려서 확인용으로만 쓴다
   }
   if (!out.story) throw new Error("--story <name> 필요 (reels/storyboards/<name>.js)");
   if (!out.out) out.out = `output/reels/${out.story}.mp4`;
@@ -86,7 +87,7 @@ async function main() {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 
-  const playerUrl = `http://127.0.0.1:${port}/player.html?story=${encodeURIComponent(args.story)}&capture=1`;
+  const playerUrl = `http://127.0.0.1:${port}/player.html?story=${encodeURIComponent(args.story)}&capture=1${args.safe ? "&safe=1" : ""}`;
   await page.goto(playerUrl);
   await page.waitForFunction(() => typeof window.renderFrame === "function" && typeof window.__DURATION__ === "number");
   const duration = await page.evaluate(() => window.__DURATION__);

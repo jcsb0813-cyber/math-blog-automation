@@ -10,6 +10,7 @@ import {
   NEON, WIDTH, HEIGHT, ease, segProgress, clamp01,
   drawBackground, glowPolylineReveal, neonText, drawSparkle,
   drawHeader, drawStepCard, drawProgressBar, drawBrandLogo,
+  SAFE_CX, SAFE_X0, SAFE_Y1,
 } from "../engine.js";
 
 // ---------- 타임라인 (초) ----------
@@ -31,9 +32,11 @@ const HEADER = {
 
 // ---------- 초점 기준 극좌표 궤도: r(θ) = ℓ / (1 + e·cosθ) ----------
 // ℓ(반통경)을 고정해두면 e가 바뀌어도 크기가 폭주하지 않고 안정적으로 보인다.
-const FX = WIDTH / 2, FY = 940;
-const ELL = 240;
-const R_MAX = 760;
+// FX는 WIDTH/2가 아니라 SAFE_CX: 업로드 시 우측 아이콘 열에 가려지지 않도록.
+// R_MAX는 가장 많이 벌어지는 타원(e=0.55) 기준으로 SAFE_X0/SAFE_Y1 안에 들어오게 잡았다.
+const FX = SAFE_CX, FY = SAFE_Y1 * 0.5;
+const ELL = 175;
+const R_MAX = 500;
 
 function polarToPoint(theta, e) {
   const denom = 1 + e * Math.cos(theta);
