@@ -1,0 +1,98 @@
+{
+  "_comment": "daily-reels 자동화가 '지루하거나 반복되지 않게' 새 영상을 고를 때 참고하는 이력. 새 회차를 만들 때마다 배열 끝에 추가한다. techniques 태그는 reels/README.md의 '화려하게 만들 때' 절에서 쓰는 이름과 맞춘다.",
+  "latest_cliffhanger": {
+    "from_episode": "prime_spiral",
+    "question_ko": "소수는 정말 무한할까?",
+    "note": "유클리드의 증명 — 이어가도 되고, 트렌드가 더 좋으면 안 이어가도 됨(선택 사항)"
+  },
+  "episodes": [
+    {
+      "id": "conic_sections",
+      "file": "reels/storyboards/conic_sections.js",
+      "series": "conic-sections",
+      "seriesIndex": 1,
+      "date": "2026-09-26",
+      "topic_ko": "원뿔곡선",
+      "techniques": ["3d-cone-projection", "cut-plane-sweep"],
+      "cliffhanger_from": null,
+      "cliffhanger_to": "우주선의 궤도는 무엇일까?"
+    },
+    {
+      "id": "eccentricity",
+      "file": "reels/storyboards/eccentricity.js",
+      "series": "conic-sections",
+      "seriesIndex": 2,
+      "date": "2026-09-26",
+      "topic_ko": "이심률 e",
+      "techniques": ["2d-polar-orbit-morph", "live-numeric-readout"],
+      "cliffhanger_from": "우주선의 궤도는 무엇일까?",
+      "cliffhanger_to": "e는 어떻게 계산할까?"
+    },
+    {
+      "id": "eccentricity_formula",
+      "file": "reels/storyboards/eccentricity_formula.js",
+      "series": "conic-sections",
+      "seriesIndex": 3,
+      "date": "2026-09-26",
+      "topic_ko": "이심률 계산법 (e=c/a)",
+      "techniques": ["formula-assembly-typography", "plugin-numbers", "alt-formula-reveal", "rapid-fire-real-examples", "drawBurst-punctuation"],
+      "cliffhanger_from": "e는 어떻게 계산할까?",
+      "cliffhanger_to": "진짜 우주선(보이저 1호 등)의 궤도를 계산해보면?"
+    },
+    {
+      "id": "geometric_series",
+      "file": "reels/storyboards/geometric_series.js",
+      "series": "standalone",
+      "seriesIndex": null,
+      "date": "2026-09-26",
+      "topic_ko": "무한등비급수",
+      "techniques": ["spiral-square-fill", "running-sum-readout", "formula-assembly-typography", "rapid-fire-real-examples"],
+      "cliffhanger_from": null,
+      "cliffhanger_to": "모든 무한합이 항상 답을 가질까?"
+    },
+    {
+      "id": "fibonacci",
+      "file": "reels/storyboards/fibonacci.js",
+      "series": "fibonacci",
+      "seriesIndex": 1,
+      "date": "2026-09-27",
+      "topic_ko": "피보나치 수열 (정사각형 나선)",
+      "techniques": ["spiral-square-fill-with-arc", "number-labels-in-shapes", "orbit-ring-decoration", "dust-atmosphere", "flare-burst-outro"],
+      "cliffhanger_from": null,
+      "cliffhanger_to": "정말 모든 자연이 피보나치를 따를까?"
+    },
+    {
+      "id": "fibonacci_factcheck",
+      "file": "reels/storyboards/fibonacci_factcheck.js",
+      "series": "fibonacci",
+      "seriesIndex": 2,
+      "date": "2026-09-27",
+      "topic_ko": "피보나치 자연 속설 팩트체크",
+      "techniques": ["claim-verdict-stamp", "rapid-claim-cycle"],
+      "cliffhanger_from": "정말 모든 자연이 피보나치를 따를까?",
+      "cliffhanger_to": "그럼 '황금비 얼굴'은 진짜 있을까?"
+    },
+    {
+      "id": "golden_ratio_face",
+      "file": "reels/storyboards/golden_ratio_face.js",
+      "series": "fibonacci",
+      "seriesIndex": 3,
+      "date": "2026-09-27",
+      "topic_ko": "황금비 얼굴 속설 팩트체크",
+      "techniques": ["claim-verdict-stamp"],
+      "cliffhanger_from": "그럼 '황금비 얼굴'은 진짜 있을까?",
+      "cliffhanger_to": "평균 얼굴이 가장 매력적일까?"
+    },
+    {
+      "id": "prime_spiral",
+      "file": "reels/storyboards/prime_spiral.js",
+      "series": "standalone",
+      "seriesIndex": null,
+      "date": "2026-09-27",
+      "topic_ko": "울람의 나선 (소수 패턴)",
+      "techniques": ["frame-by-frame-grid-fill", "data-driven-diagonal-reveal", "camera-wobble-zoom", "dust-atmosphere", "flare-burst-outro"],
+      "cliffhanger_from": null,
+      "cliffhanger_to": "소수는 정말 무한할까?"
+    }
+  ]
+}
