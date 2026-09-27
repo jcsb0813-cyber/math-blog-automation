@@ -324,7 +324,7 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export function drawHeader(ctx, { breadcrumb, episode, title, subtitle, alpha = 1, titleY = 220 }) {
+export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY = 220 }) {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.textBaseline = "middle";
@@ -333,12 +333,6 @@ export function drawHeader(ctx, { breadcrumb, episode, title, subtitle, alpha = 
   ctx.font = `600 30px "Pretendard", "Noto Sans KR", sans-serif`;
   ctx.fillStyle = "rgba(205,220,255,0.7)";
   ctx.fillText(breadcrumb, 64, 92);
-
-  ctx.textAlign = "right";
-  ctx.shadowColor = NEON.cyan;
-  ctx.shadowBlur = 14;
-  ctx.fillStyle = NEON.cyan;
-  ctx.fillText(episode, WIDTH - 64, 92);
 
   neonText(ctx, title, WIDTH / 2, titleY, { size: 68, color: NEON.white, glow: 14, weight: 800 });
   neonText(ctx, subtitle, WIDTH / 2, titleY + 92, { size: 32, color: NEON.cyan, glow: 12, weight: 600 });

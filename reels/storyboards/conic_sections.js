@@ -28,7 +28,6 @@ const CONTENT_END = T.CLIFF[1]; // 진행률 바는 아웃트로 전까지 채�
 
 const HEADER = {
   breadcrumb: "고등 · 이차곡선",
-  episode: "07",
   title: "원뿔곡선",
   subtitle: "자르는 각도가 곡선을 결정한다",
 };
