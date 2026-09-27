@@ -138,6 +138,15 @@ node reels/render.mjs --story conic_sections --out output/reels/conic_sections.m
 - **장면 수를 늘린다**: 한 개념을 한 화면에서 계속 우려먹지 말고, 기하 장면(도형+라벨) ↔
   타이포 장면(큰 숫자/공식만) ↔ 속사포 사례 장면(여러 항목을 빠르게 전환)을 섞는다.
   `eccentricity_formula.js`가 이 패턴의 예시다(설정→공식→대입→대안→실제사례 3연타).
+- **`drawDust`로 은은한 분위기를 깐다**: `drawSparks`보다 훨씬 조용하고 촘촘한(60~80개)
+  미세 먼지 입자가 화면 전체에 서서히 흘러내린다. `decorate()`에서 매 장면 기본으로
+  깔아주면 "우주/네온" 분위기가 확 산다 — `fibonacci.js` 참고.
+- **`drawOrbitRing`으로 SF-HUD 느낌을 더한다**: 중심 도형 주위(또는 뒤)를 천천히 도는
+  점선 타원 + 화살표 마커. 안전영역보다 크게 그리면 잘리니, 반지름은 항상
+  `--safe` 가이드로 확인하고 안전영역 폭의 절반보다 작게 잡는다.
+- **`drawFlare` + `drawBurst`로 아웃트로를 더 폭발적으로**: 로고가 나타나기 직전에
+  밝은 방사형 플레어(`drawFlare`)를 깔고 그 위에 큰 `drawBurst`(count 40+, maxDist 400+)를
+  터뜨리면 레퍼런스 영상 같은 "빛 폭발" 느낌이 난다 — `fibonacci.js`의 `renderOutro` 참고.
 - **`drawBurst`로 순간을 강조한다**: 공식이 완성되는 순간, 숫자가 확정되는 순간처럼
   "짜릿한 포인트"에만 방사형 파티클을 짧게 터뜨린다. 화면 전체에 계속 뿌리는
   `drawSparks`/색종이 효과와 달리, `drawBurst`는 0.3~0.6초짜리 순간 연출이라 차분한

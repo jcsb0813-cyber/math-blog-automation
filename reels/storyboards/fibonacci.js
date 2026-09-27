@@ -11,6 +11,7 @@ import {
   WIDTH, HEIGHT, NEON, ease, segProgress, clamp01,
   drawBackground, glowStroke, glowPolylineReveal, neonText, drawSparkle,
   drawHeader, drawStepCard, drawProgressBar, drawBrandLogo, drawBurst,
+  drawDust, drawOrbitRing, drawFlare,
   SAFE_CX, SAFE_Y1,
 } from "../engine.js";
 
@@ -78,7 +79,7 @@ const ARC_RULES = {
 const { squares: UNIT_SQUARES, rect: UNIT_RECT } = buildFibUnitSquares(FIBS);
 
 // 픽셀 좌표로 변환 (전체 나선을 안전영역 중심에 맞춘다)
-const UNIT = 62;
+const UNIT = 65;
 const DIAGRAM_CX = SAFE_CX;
 const DIAGRAM_CY = 700;
 const rectCenterU = { x: UNIT_RECT.x + UNIT_RECT.w / 2, y: UNIT_RECT.y + UNIT_RECT.h / 2 };
@@ -122,7 +123,7 @@ const ARCS_PX = SQUARES_PX.map((_, i) => (i === 0 ? null : arcPoints(i)));
 
 const PIECE_COLORS = [NEON.cyan, NEON.magenta, NEON.yellow, NEON.green, NEON.cyan, NEON.magenta];
 
-function drawSquare(ctx, sq, color, reveal) {
+function drawSquare(ctx, sq, color, reveal, label) {
   if (reveal <= 0.001) return;
   const p = ease.outBack(clamp01(reveal));
   const cx = sq.x + sq.size / 2, cy = sq.y + sq.size / 2;
@@ -139,13 +140,47 @@ function drawSquare(ctx, sq, color, reveal) {
   ctx.shadowBlur = 16;
   ctx.lineWidth = 3.5;
   ctx.strokeRect(sq.x + 2, sq.y + 2, sq.size - 4, sq.size - 4);
+  if (label !== undefined) {
+    const fontSize = Math.max(20, Math.min(52, sq.size * 0.32));
+    ctx.font = `italic 700 ${fontSize}px Georgia, "Noto Serif KR", serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = color;
+    ctx.fillText(String(label), cx, cy);
+  }
+  ctx.restore();
+}
+
+// 아크가 그려지는 끝부분에 "펜 촉"처럼 밝은 점을 찍어 손으로 그은 듯한 느낌을 준다.
+function drawArcTip(ctx, pts, reveal) {
+  if (reveal <= 0.001 || reveal >= 0.999) return;
+  const idx = Math.min(pts.length - 1, Math.floor(pts.length * clamp01(reveal)));
+  const pt = pts[idx];
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "#ffffff";
+  ctx.shadowBlur = 24;
+  ctx.beginPath();
+  ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
 function decorate(ctx, t) {
+  drawDust(ctx, t, 70);
   const pulse = 0.55 + 0.35 * Math.sin(t * 1.6);
   drawSparkle(ctx, WIDTH - 84, HEIGHT - 620, 20, { color: NEON.white, alpha: pulse });
   drawSparkle(ctx, 78, 640, 13, { color: NEON.cyan, alpha: pulse * 0.7 });
+}
+
+// 나선 중심부 뒤를 천천히 도는 대시 궤도 링 (SF-HUD 느낌의 장식).
+// 나선 전체를 둘러싸기엔 안전영역이 부족해서, 중심부 정도만 감싸는 작은 링으로 잡았다
+// (반지름을 안전영역 폭의 절반보다 항상 작게 유지 — 아래 수치는 --safe로 직접 확인함).
+function decorateOrbit(ctx, t, alpha = 1) {
+  drawOrbitRing(ctx, DIAGRAM_CX, DIAGRAM_CY, 300, 190, t * 0.12, {
+    color: "rgba(255,255,255,0.35)", alpha, arrowCount: 3,
+  });
 }
 
 // ---------- 세그먼트별 렌더 ----------
@@ -158,8 +193,8 @@ function renderHook(ctx, t) {
 
   const p0 = segProgress(local, 0.2, 0.7, ease.outBack);
   const p1 = segProgress(local, 0.6, 1.1, ease.outBack);
-  drawSquare(ctx, SQUARES_PX[0], PIECE_COLORS[0], p0);
-  drawSquare(ctx, SQUARES_PX[1], PIECE_COLORS[1], p1);
+  drawSquare(ctx, SQUARES_PX[0], PIECE_COLORS[0], p0, FIBS[0]);
+  drawSquare(ctx, SQUARES_PX[1], PIECE_COLORS[1], p1, FIBS[1]);
 
   const cardA = segProgress(local, 1.1, 1.7);
   drawStepCard(ctx, {
@@ -178,18 +213,21 @@ function renderDemo(ctx, t) {
   decorate(ctx, t);
   drawHeader(ctx, { ...HEADER, alpha: 1 });
 
+  decorateOrbit(ctx, t, 0.6);
+
   const idx = Math.min(FIBS.length - 1, Math.floor(local / STEP_DUR));
   const within = local - idx * STEP_DUR;
 
   for (let i = 0; i < idx; i++) {
-    drawSquare(ctx, SQUARES_PX[i], PIECE_COLORS[i], 1);
+    drawSquare(ctx, SQUARES_PX[i], PIECE_COLORS[i], 1, FIBS[i]);
     if (ARCS_PX[i]) glowPolylineReveal(ctx, ARCS_PX[i], 1, NEON.white, 4, 16);
   }
   const sqReveal = segProgress(within, 0.0, 0.4, ease.outBack);
-  drawSquare(ctx, SQUARES_PX[idx], PIECE_COLORS[idx], sqReveal);
+  drawSquare(ctx, SQUARES_PX[idx], PIECE_COLORS[idx], sqReveal, FIBS[idx]);
   if (ARCS_PX[idx]) {
     const arcReveal = segProgress(within, 0.35, 0.85, ease.outCubic);
     glowPolylineReveal(ctx, ARCS_PX[idx], arcReveal, NEON.white, 4, 16);
+    drawArcTip(ctx, ARCS_PX[idx], arcReveal);
   }
   if (within > 0.02 && within < 0.5) {
     const sq = SQUARES_PX[idx];
@@ -332,8 +370,12 @@ function renderOutro(ctx, t) {
   drawBackground(ctx, t);
   decorate(ctx, t);
   const logoP = segProgress(local, 0.0, 1.0, ease.outCubic);
+  if (local > 0.8) {
+    const flareP = segProgress(local, 0.8, 1.5);
+    drawFlare(ctx, WIDTH / 2, HEIGHT / 2, 60 + flareP * 260, (1 - segProgress(local, 1.1, e - s)) * 0.8, NEON.white);
+  }
   drawBrandLogo(ctx, WIDTH / 2, HEIGHT / 2, logoP);
-  if (local > 0.85) drawBurst(ctx, WIDTH / 2, HEIGHT / 2, segProgress(local, 0.85, e - s), { colors: [NEON.cyan, NEON.magenta], count: 28, maxDist: 300 });
+  if (local > 0.8) drawBurst(ctx, WIDTH / 2, HEIGHT / 2, segProgress(local, 0.8, e - s), { colors: [NEON.cyan, NEON.magenta, NEON.white], count: 40, maxDist: 420 });
 }
 
 // ---------- 메인 렌더 함수 ----------

@@ -546,3 +546,77 @@ export function drawBurst(ctx, cx, cy, progress, opts = {}) {
     ctx.restore();
   }
 }
+
+// 화면 가득한 미세 먼지 입자 — drawSparks보다 훨씬 조용하고 촘촘해서 "우주 먼지" 분위기를 낸다.
+// 매 프레임 같은 시드로 rng를 다시 만들기 때문에 각 입자의 기준 위치는 고정되고, t에 따라
+// 서서히 아래로 흘러내리며(화면 밖으로 나가면 위에서 다시 등장) 반복 루프 없이 자연스럽다.
+export function drawDust(ctx, t, count = 70, opts = {}) {
+  const { color = "255,255,255", speed = 16 } = opts;
+  const rng = makeRng(9001);
+  for (let i = 0; i < count; i++) {
+    const seedX = rng() * WIDTH;
+    const seedY = rng() * HEIGHT;
+    const drift = 6 + rng() * speed;
+    const size = 0.7 + rng() * 1.6;
+    const alpha = 0.12 + rng() * 0.3;
+    const y = ((seedY + t * drift) % (HEIGHT + 40)) - 20;
+    const x = seedX + Math.sin(t * 0.25 + i) * 6;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `rgba(${color},1)`;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// 대시된 궤도 링 + 화살표 마커 — 다이어그램 주위를 천천히 회전하는 SF-HUD 느낌의 장식.
+export function drawOrbitRing(ctx, cx, cy, rx, ry, rotation, opts = {}) {
+  const { color = "rgba(255,255,255,0.5)", dash = [14, 10], lineWidth = 2, alpha = 1, arrowCount = 2 } = opts;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  ctx.setLineDash(dash);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  for (let k = 0; k < arrowCount; k++) {
+    const a = (k / arrowCount) * Math.PI * 2;
+    const ax = rx * Math.cos(a), ay = ry * Math.sin(a);
+    const tangent = Math.atan2(ry * Math.cos(a), -rx * Math.sin(a));
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(tangent);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(9, 0);
+    ctx.lineTo(-6, -5.5);
+    ctx.lineTo(-6, 5.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+// 클라이맥스용 밝은 방사형 플레어(빛 폭발의 "코어"). drawBurst와 함께 써서 순간을
+// 훨씬 더 강렬하게 만든다.
+export function drawFlare(ctx, cx, cy, radius, alpha, color = NEON.white) {
+  if (alpha <= 0.005 || radius <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = clamp01(alpha);
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  g.addColorStop(0, color);
+  g.addColorStop(0.18, color);
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
