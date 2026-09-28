@@ -1,0 +1,332 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "중3",
+  "unit": "원의 접선",
+  "hook": "원에 딱 맞는 사각형,\nAD는 몇 cm?",
+  "hook_tag": "시험에 꼭 나오는 중3 도형",
+  "keywords": [
+    "중3 원의 접선 기출",
+    "중등 도형 문제",
+    "접선의 길이"
+  ],
+  "problem": "원 O가 사각형 ABCD의 네 변에\n모두 접할 때, AB=7cm, BC=10cm,\nCD=9cm이면 AD는 몇 cm일까요?",
+  "figure": {
+    "w": 6.6,
+    "h": 6.4,
+    "items": [
+      {
+        "type": "poly",
+        "id": "quad",
+        "points": [
+          [
+            3.495,
+            1.31
+          ],
+          [
+            5.931,
+            2.955
+          ],
+          [
+            2.729,
+            5.673
+          ],
+          [
+            1.152,
+            2.238
+          ]
+        ],
+        "color": "blue"
+      },
+      {
+        "type": "circle",
+        "id": "circ",
+        "center": [
+          3.3,
+          3.1
+        ],
+        "r": 1.592,
+        "color": "orange"
+      },
+      {
+        "type": "label",
+        "id": "lA",
+        "text": "A",
+        "at": [
+          3.53,
+          0.988
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lB",
+        "text": "B",
+        "at": [
+          6.405,
+          2.929
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lC",
+        "text": "C",
+        "at": [
+          2.626,
+          6.136
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lD",
+        "text": "D",
+        "at": [
+          0.765,
+          2.083
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lab",
+        "text": "7cm",
+        "at": [
+          5.031,
+          1.915
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lbc",
+        "text": "10cm",
+        "at": [
+          4.562,
+          4.587
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lcd",
+        "text": "9cm",
+        "at": [
+          1.635,
+          4.148
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lda",
+        "text": "?",
+        "at": [
+          2.104,
+          1.476
+        ],
+        "size": 56,
+        "color": "coral"
+      },
+      {
+        "type": "dot",
+        "id": "p0",
+        "at": [
+          2.714,
+          1.619
+        ],
+        "r": 0.1,
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "dot",
+        "id": "p1",
+        "at": [
+          4.191,
+          1.78
+        ],
+        "r": 0.1,
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "dot",
+        "id": "p2",
+        "at": [
+          4.33,
+          4.314
+        ],
+        "r": 0.1,
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "dot",
+        "id": "p3",
+        "at": [
+          1.853,
+          3.765
+        ],
+        "r": 0.1,
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "line",
+        "id": "tA1",
+        "from": [
+          3.495,
+          1.31
+        ],
+        "to": [
+          4.191,
+          1.78
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "tA2",
+        "from": [
+          3.495,
+          1.31
+        ],
+        "to": [
+          2.714,
+          1.619
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "tB1",
+        "from": [
+          5.931,
+          2.955
+        ],
+        "to": [
+          4.33,
+          4.314
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "tB2",
+        "from": [
+          5.931,
+          2.955
+        ],
+        "to": [
+          4.191,
+          1.78
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "tC1",
+        "from": [
+          2.729,
+          5.673
+        ],
+        "to": [
+          1.853,
+          3.765
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "tC2",
+        "from": [
+          2.729,
+          5.673
+        ],
+        "to": [
+          4.33,
+          4.314
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "tD1",
+        "from": [
+          1.152,
+          2.238
+        ],
+        "to": [
+          2.714,
+          1.619
+        ],
+        "hidden": true,
+        "color": "purple"
+      },
+      {
+        "type": "line",
+        "id": "tD2",
+        "from": [
+          1.152,
+          2.238
+        ],
+        "to": [
+          1.853,
+          3.765
+        ],
+        "hidden": true,
+        "color": "purple"
+      }
+    ],
+    "focus": [
+      "circ"
+    ]
+  },
+  "choices": [
+    "8cm",
+    "6cm",
+    "12cm"
+  ],
+  "correct": 1,
+  "hint": "원 밖의 한 점에서 그은 두 접선의 길이를 비교해 보세요.",
+  "steps": [
+    {
+      "text": "한 꼭짓점에서 그은 두 접선은\n길이가 같아요 (같은 색)",
+      "show": [
+        "p0",
+        "p1",
+        "p2",
+        "p3",
+        "tA1",
+        "tA2",
+        "tB1",
+        "tB2",
+        "tC1",
+        "tC2",
+        "tD1",
+        "tD2"
+      ]
+    },
+    {
+      "text": "그래서 마주 보는 변의 합이 같아요\nAB + CD = BC + AD",
+      "highlight": [
+        "lab",
+        "lcd"
+      ]
+    },
+    {
+      "text": "7 + 9 = 10 + AD → AD = 6cm",
+      "highlight": [
+        "lda"
+      ]
+    }
+  ],
+  "answer": "6cm",
+  "answer_note": "8cm라고 했다면 함정!\n마주 보는 변끼리 더해야 해요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "저장해두고 아이와 함께 풀어보세요"
+}

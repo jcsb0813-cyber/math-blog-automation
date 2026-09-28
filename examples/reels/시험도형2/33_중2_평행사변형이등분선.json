@@ -1,0 +1,267 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "중2",
+  "unit": "평행사변형",
+  "hook": "각의 이등분선 문제,\nEC는 몇 cm?",
+  "hook_tag": "시험에 꼭 나오는 중2 도형",
+  "keywords": [
+    "중2 평행사변형 기출",
+    "중등 도형 문제",
+    "각의 이등분선"
+  ],
+  "problem": "평행사변형 ABCD에서 ∠A의 이등분선이\nBC와 만나는 점을 E라 할 때\nAB=6cm, AD=10cm이면 EC는?",
+  "figure": {
+    "w": 7.3,
+    "h": 5,
+    "items": [
+      {
+        "type": "poly",
+        "id": "pg",
+        "points": [
+          [
+            1.9,
+            1.802
+          ],
+          [
+            0.4,
+            4.4
+          ],
+          [
+            5.4,
+            4.4
+          ],
+          [
+            6.9,
+            1.802
+          ]
+        ],
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "AE",
+        "from": [
+          1.9,
+          1.802
+        ],
+        "to": [
+          3.4,
+          4.4
+        ],
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "lA",
+        "text": "A",
+        "at": [
+          1.5999999999999999,
+          1.552
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lB",
+        "text": "B",
+        "at": [
+          0.15000000000000002,
+          4.7
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lC",
+        "text": "C",
+        "at": [
+          5.6000000000000005,
+          4.7
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lD",
+        "text": "D",
+        "at": [
+          7.15,
+          1.552
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lE",
+        "text": "E",
+        "at": [
+          3.4,
+          4.800000000000001
+        ]
+      },
+      {
+        "type": "label",
+        "id": "l6",
+        "text": "6cm",
+        "at": [
+          0.7,
+          2.9
+        ]
+      },
+      {
+        "type": "label",
+        "id": "l10",
+        "text": "10cm",
+        "at": [
+          4.4,
+          1.35
+        ]
+      },
+      {
+        "type": "angle",
+        "id": "a1",
+        "at": [
+          1.9,
+          1.802
+        ],
+        "from": [
+          0.4,
+          4.4
+        ],
+        "to": [
+          3.4,
+          4.4
+        ],
+        "r": 0.55,
+        "color": "orange"
+      },
+      {
+        "type": "angle",
+        "id": "a2",
+        "at": [
+          1.9,
+          1.802
+        ],
+        "from": [
+          3.4,
+          4.4
+        ],
+        "to": [
+          6.9,
+          1.802
+        ],
+        "r": 0.7,
+        "color": "orange"
+      },
+      {
+        "type": "angle",
+        "id": "aE",
+        "at": [
+          3.4,
+          4.4
+        ],
+        "from": [
+          1.9,
+          1.802
+        ],
+        "to": [
+          0.4,
+          4.4
+        ],
+        "r": 0.55,
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "poly",
+        "id": "abe",
+        "points": [
+          [
+            1.9,
+            1.802
+          ],
+          [
+            0.4,
+            4.4
+          ],
+          [
+            3.4,
+            4.4
+          ]
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "EC",
+        "from": [
+          3.4,
+          4.4
+        ],
+        "to": [
+          5.4,
+          4.4
+        ],
+        "hidden": true,
+        "color": "purple"
+      },
+      {
+        "type": "label",
+        "id": "l4",
+        "text": "4cm",
+        "at": [
+          4.4,
+          4.800000000000001
+        ],
+        "hidden": true,
+        "color": "purple"
+      }
+    ],
+    "focus": [
+      "AE"
+    ]
+  },
+  "choices": [
+    "5cm",
+    "4cm",
+    "6cm"
+  ],
+  "correct": 1,
+  "hint": "AD와 BC가 평행하니까 엇각을 찾아보세요.",
+  "steps": [
+    {
+      "text": "AD ∥ BC라서 엇각이 같아요\n∠DAE = ∠AEB",
+      "show": [
+        "aE"
+      ],
+      "highlight": [
+        "a2",
+        "aE"
+      ]
+    },
+    {
+      "text": "∠BAE = ∠BEA → 이등변삼각형\nBE = AB = 6cm",
+      "show": [
+        "abe"
+      ],
+      "highlight": [
+        "abe"
+      ]
+    },
+    {
+      "text": "EC = 10 - 6 = 4cm",
+      "show": [
+        "EC",
+        "l4"
+      ],
+      "highlight": [
+        "EC"
+      ]
+    }
+  ],
+  "answer": "4cm",
+  "answer_note": "5cm라고 했다면 함정!\n반으로 나누는 게 아니라 이등변삼각형이에요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 원에 딱 맞는 사각형, AD는?"
+}

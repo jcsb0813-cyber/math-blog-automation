@@ -1,0 +1,220 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초4",
+  "unit": "다각형",
+  "hook": "정육각형 한 각,\n60°일까 120°일까?",
+  "hook_tag": "시험에 꼭 나오는 초4 도형",
+  "keywords": [
+    "초4 다각형 단원평가",
+    "초등 도형 문제",
+    "정다각형 한 각"
+  ],
+  "problem": "정육각형의 한 각의 크기는\n몇 도일까요?",
+  "figure": {
+    "w": 6,
+    "h": 5.4,
+    "items": [
+      {
+        "type": "poly",
+        "id": "hex",
+        "points": [
+          [
+            0.6,
+            2.7
+          ],
+          [
+            1.8,
+            0.622
+          ],
+          [
+            4.2,
+            0.622
+          ],
+          [
+            5.4,
+            2.7
+          ],
+          [
+            4.2,
+            4.778
+          ],
+          [
+            1.8,
+            4.778
+          ]
+        ],
+        "fill": "blue",
+        "color": "blue"
+      },
+      {
+        "type": "angle",
+        "id": "a0",
+        "at": [
+          0.6,
+          2.7
+        ],
+        "from": [
+          1.8,
+          0.622
+        ],
+        "to": [
+          1.8,
+          4.778
+        ],
+        "r": 0.7,
+        "label": "?",
+        "color": "coral",
+        "size": 52
+      },
+      {
+        "type": "line",
+        "id": "d2",
+        "from": [
+          0.6,
+          2.7
+        ],
+        "to": [
+          4.2,
+          0.622
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "d3",
+        "from": [
+          0.6,
+          2.7
+        ],
+        "to": [
+          5.4,
+          2.7
+        ],
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "line",
+        "id": "d4",
+        "from": [
+          0.6,
+          2.7
+        ],
+        "to": [
+          4.2,
+          4.778
+        ],
+        "hidden": true,
+        "color": "purple"
+      },
+      {
+        "type": "label",
+        "id": "t1",
+        "text": "1",
+        "at": [
+          2.2,
+          1.315
+        ],
+        "size": 50,
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "t2",
+        "text": "2",
+        "at": [
+          3.4,
+          2.007
+        ],
+        "size": 50,
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "t3",
+        "text": "3",
+        "at": [
+          3.4,
+          3.393
+        ],
+        "size": 50,
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "t4",
+        "text": "4",
+        "at": [
+          2.2,
+          4.085
+        ],
+        "size": 50,
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "l120",
+        "text": "120°",
+        "at": [
+          1.9500000000000002,
+          2.7
+        ],
+        "size": 46,
+        "hidden": true,
+        "color": "coral"
+      }
+    ],
+    "focus": [
+      "hex"
+    ]
+  },
+  "choices": [
+    "60°",
+    "120°",
+    "720°"
+  ],
+  "correct": 1,
+  "hint": "한 꼭짓점에서 대각선을 그어 삼각형으로 나눠 보세요.",
+  "steps": [
+    {
+      "text": "한 꼭짓점에서 대각선을 그으면\n삼각형 4개",
+      "show": [
+        "d2",
+        "d3",
+        "d4",
+        "t1",
+        "t2",
+        "t3",
+        "t4"
+      ]
+    },
+    {
+      "text": "여섯 각의 합 = 180° × 4 = 720°",
+      "highlight": [
+        "hex"
+      ]
+    },
+    {
+      "text": "한 각 = 720° ÷ 6 = 120°",
+      "show": [
+        "l120"
+      ],
+      "highlight": [
+        "a0"
+      ]
+    }
+  ],
+  "answer": "120°",
+  "answer_note": "60°라고 했다면 함정!\n가운데 각이 아니라 꼭짓점의 각이에요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 높이가 밖에 있는 삼각형의 넓이"
+}
