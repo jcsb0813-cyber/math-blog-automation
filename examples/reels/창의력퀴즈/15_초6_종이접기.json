@@ -1,0 +1,228 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초6",
+  "unit": "규칙 찾기",
+  "hook": "종이 5번 접었다 펴면\n몇 칸이 될까?",
+  "hook_tag": "엄마도 헷갈리는 초6 문제",
+  "keywords": [
+    "초등 창의력 문제",
+    "초6 창의 사고력",
+    "종이접기 문제"
+  ],
+  "problem": "종이를 반으로 접기를 5번 하고\n다시 펼쳤어요.\n접힌 선으로 나뉜 칸은 몇 개일까요?",
+  "figure": {
+    "w": 9,
+    "h": 5,
+    "items": [
+      {
+        "type": "poly",
+        "id": "paper",
+        "points": [
+          [
+            0.5,
+            0.5
+          ],
+          [
+            8.5,
+            0.5
+          ],
+          [
+            8.5,
+            4.5
+          ],
+          [
+            0.5,
+            4.5
+          ]
+        ],
+        "fill": true,
+        "color": "orange"
+      },
+      {
+        "type": "line",
+        "id": "f1",
+        "from": [
+          4.5,
+          0.5
+        ],
+        "to": [
+          4.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "f2",
+        "from": [
+          0.5,
+          2.5
+        ],
+        "to": [
+          8.5,
+          2.5
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "f3a",
+        "from": [
+          2.5,
+          0.5
+        ],
+        "to": [
+          2.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "f3b",
+        "from": [
+          6.5,
+          0.5
+        ],
+        "to": [
+          6.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "f4a",
+        "from": [
+          0.5,
+          1.5
+        ],
+        "to": [
+          8.5,
+          1.5
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "f4b",
+        "from": [
+          0.5,
+          3.5
+        ],
+        "to": [
+          8.5,
+          3.5
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "f50",
+        "from": [
+          1.5,
+          0.5
+        ],
+        "to": [
+          1.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "f51",
+        "from": [
+          3.5,
+          0.5
+        ],
+        "to": [
+          3.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "f52",
+        "from": [
+          5.5,
+          0.5
+        ],
+        "to": [
+          5.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "f53",
+        "from": [
+          7.5,
+          0.5
+        ],
+        "to": [
+          7.5,
+          4.5
+        ],
+        "hidden": true,
+        "color": "green"
+      }
+    ],
+    "focus": [
+      "paper"
+    ]
+  },
+  "choices": [
+    "10칸",
+    "25칸",
+    "32칸"
+  ],
+  "correct": 2,
+  "hint": "한 번 접을 때마다 칸이 어떻게 변할까요?",
+  "steps": [
+    {
+      "text": "1번 → 2칸, 2번 → 4칸",
+      "show": [
+        "f1",
+        "f2"
+      ]
+    },
+    {
+      "text": "3번 → 8칸, 4번 → 16칸\n접을 때마다 2배!",
+      "show": [
+        "f3a",
+        "f3b",
+        "f4a",
+        "f4b"
+      ]
+    },
+    {
+      "text": "5번 → 32칸",
+      "show": [
+        "f50",
+        "f51",
+        "f52",
+        "f53"
+      ]
+    }
+  ],
+  "answer": "32칸",
+  "answer_note": "10칸이라고 했다면 함정!\n접을 때마다 칸이 2배가 돼요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "저장해두고 아이와 함께 풀어보세요"
+}

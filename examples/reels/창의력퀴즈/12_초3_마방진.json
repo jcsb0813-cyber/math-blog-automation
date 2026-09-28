@@ -1,0 +1,389 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초3",
+  "unit": "마방진",
+  "hook": "마방진 가운데엔\n어떤 수가 들어갈까?",
+  "hook_tag": "엄마도 헷갈리는 초3 문제",
+  "keywords": [
+    "초등 창의력 문제",
+    "초3 창의 사고력",
+    "마방진"
+  ],
+  "problem": "1부터 9까지 한 번씩 넣어\n가로·세로·대각선의 합이 모두 같게!\n가운데 수는 무엇일까요?",
+  "figure": {
+    "w": 3,
+    "h": 3,
+    "items": [
+      {
+        "type": "poly",
+        "id": "grid",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "color": "purple"
+      },
+      {
+        "type": "line",
+        "id": "gx1",
+        "from": [
+          1,
+          0
+        ],
+        "to": [
+          1,
+          3
+        ]
+      },
+      {
+        "type": "line",
+        "id": "gx2",
+        "from": [
+          2,
+          0
+        ],
+        "to": [
+          2,
+          3
+        ]
+      },
+      {
+        "type": "line",
+        "id": "gy1",
+        "from": [
+          0,
+          1
+        ],
+        "to": [
+          3,
+          1
+        ]
+      },
+      {
+        "type": "line",
+        "id": "gy2",
+        "from": [
+          0,
+          2
+        ],
+        "to": [
+          3,
+          2
+        ]
+      },
+      {
+        "type": "label",
+        "id": "q",
+        "text": "?",
+        "at": [
+          1.5,
+          1.5
+        ],
+        "size": 80,
+        "color": "coral"
+      },
+      {
+        "type": "poly",
+        "id": "row0",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "poly",
+        "id": "row1",
+        "points": [
+          [
+            0,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "poly",
+        "id": "row2",
+        "points": [
+          [
+            0,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "line",
+        "id": "d1",
+        "from": [
+          0.15,
+          0.15
+        ],
+        "to": [
+          2.85,
+          2.85
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "d2",
+        "from": [
+          2.85,
+          0.15
+        ],
+        "to": [
+          0.15,
+          2.85
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "mr",
+        "from": [
+          0.15,
+          1.5
+        ],
+        "to": [
+          2.85,
+          1.5
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "mc",
+        "from": [
+          1.5,
+          0.15
+        ],
+        "to": [
+          1.5,
+          2.85
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "label",
+        "id": "n00",
+        "text": "2",
+        "at": [
+          0.5,
+          0.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n01",
+        "text": "7",
+        "at": [
+          1.5,
+          0.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n02",
+        "text": "6",
+        "at": [
+          2.5,
+          0.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n10",
+        "text": "9",
+        "at": [
+          0.5,
+          1.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n12",
+        "text": "1",
+        "at": [
+          2.5,
+          1.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n20",
+        "text": "4",
+        "at": [
+          0.5,
+          2.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n21",
+        "text": "3",
+        "at": [
+          1.5,
+          2.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n22",
+        "text": "8",
+        "at": [
+          2.5,
+          2.5
+        ],
+        "size": 64,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "n11",
+        "text": "5",
+        "at": [
+          1.5,
+          1.5
+        ],
+        "size": 80,
+        "hidden": true,
+        "color": "coral"
+      }
+    ],
+    "focus": [
+      "grid"
+    ]
+  },
+  "choices": [
+    "9",
+    "5",
+    "1"
+  ],
+  "correct": 1,
+  "hint": "1부터 9까지 모두 더하면 얼마일까요?",
+  "steps": [
+    {
+      "text": "1~9의 합은 45\n→ 한 줄의 합은 45 ÷ 3 = 15",
+      "show": [
+        "row0",
+        "row1",
+        "row2"
+      ],
+      "highlight": []
+    },
+    {
+      "text": "가운데를 지나는 4줄의 합 = 60\n= 45 + 가운데 × 3",
+      "show": [
+        "d1",
+        "d2",
+        "mr",
+        "mc"
+      ]
+    },
+    {
+      "text": "가운데 × 3 = 15 → 가운데 = 5",
+      "show": [
+        "n11",
+        "n00",
+        "n01",
+        "n02",
+        "n10",
+        "n12",
+        "n20",
+        "n21",
+        "n22"
+      ]
+    }
+  ],
+  "answer": "5",
+  "answer_note": "9라고 했다면 함정!\n가운데는 1~9의 딱 중간 수예요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 케이크 3번 잘라서 최대 몇 조각?"
+}
