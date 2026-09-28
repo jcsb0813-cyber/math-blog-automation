@@ -228,11 +228,24 @@ def highlight(draw, x0, y0, x1, y1, color=YELLOW, progress=1.0):
 
 # ---------------------------------------------------------------- common chrome
 
+# 영상 전체 진행률(0~1). render()가 프레임마다 바꾼다. None이면(커버 등) 진행 막대 대신 노란 띠만.
+PROGRESS = None
+
+
+def draw_progress(d, track, fill):
+    """상단 진행 막대 — 얼마나 남았는지 보여줘서 끝까지 보게 만든다."""
+    if PROGRESS is None:
+        d.rectangle((0, 0, W, 22), fill=fill)
+        return
+    d.rectangle((0, 0, W, 22), fill=track)
+    d.rectangle((0, 0, W * max(0.0, min(1.0, PROGRESS)), 22), fill=fill)
+
+
 def base_frame(spec, bg=PAPER) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGB", (W, H), bg)
     d = ImageDraw.Draw(img)
-    # 상단 노란 띠 + 학년/단원 태그
-    d.rectangle((0, 0, W, 22), fill=YELLOW)
+    # 상단 진행 막대 + 학년/단원 태그
+    draw_progress(d, (236, 230, 208), YELLOW)
     tag = f"{spec['grade']} · {spec['unit']}"
     fnt = font(40)
     tw = fnt.getlength(tag)
@@ -302,6 +315,8 @@ def draw_choices(d, spec, top, alpha=1.0, reveal=False):
 def scene_hook(spec, t, dur):
     img = Image.new("RGB", (W, H), YELLOW)
     d = ImageDraw.Draw(img)
+    if PROGRESS is not None:
+        draw_progress(d, (235, 190, 0), INK)
     p = ease_out(t / 0.5)
     hook = spec.get("hook", "이 문제, 풀 수 있나요?")
     size = _fit_size(hook, (104, 96, 88, 80), W - 2 * MARGIN, "extrabold")
@@ -441,6 +456,8 @@ def scene_answer(spec, t, dur):
 def scene_cta(spec, t, dur):
     img = Image.new("RGB", (W, H), INK)
     d = ImageDraw.Draw(img)
+    if PROGRESS is not None:
+        draw_progress(d, (70, 70, 74), YELLOW)
     p = ease_out(t / 0.6)
     cta = spec.get("cta", "성공한 친구\n손✋~")
     y = text_block(d, cta, 620 + (1 - p) * 50, 80, color=WHITE, weight="extrabold", alpha=p, bg=INK)
@@ -524,19 +541,25 @@ def validate(spec):
 
 def render(spec, out_dir: Path, preview: bool, sound: bool):
     import imageio_ffmpeg
+    global PROGRESS
 
     timeline = build_timeline(spec)
     total = sum(d for _, _, d in timeline)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 커버: 후킹 장면 완성 상태
+    # 커버: 후킹 장면 완성 상태 (진행 막대 없음)
+    PROGRESS = None
     scene_hook(spec, 10, 1).save(out_dir / "cover.png")
 
     if preview:
         pdir = out_dir / "preview"
         pdir.mkdir(exist_ok=True)
+        elapsed = 0.0
         for i, (name, fn, dur) in enumerate(timeline):
+            PROGRESS = (elapsed + dur * 0.8) / total
             fn(spec, dur * 0.8, dur).save(pdir / f"{i:02d}_{name}.png")
+            elapsed += dur
+        PROGRESS = None
         print(f"미리보기 {len(timeline)}장 → {pdir}  (총 {total:.1f}초 예정)")
         return
 
@@ -551,11 +574,15 @@ def render(spec, out_dir: Path, preview: bool, sound: bool):
         cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "medium", "-crf", "20",
                 "-movflags", "+faststart", str(out_dir / "reel.mp4")]
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+        elapsed = 0.0
         for name, fn, dur in timeline:
             frames = int(round(dur * FPS))
             for f in range(frames):
+                PROGRESS = (elapsed + f / FPS) / total
                 proc.stdin.write(fn(spec, f / FPS, dur).tobytes())
+            elapsed += dur
             print(f"  {name:8s} {dur:4.1f}s")
+        PROGRESS = None
         proc.stdin.close()
         if proc.wait() != 0:
             sys.exit("ffmpeg 인코딩 실패")
@@ -568,8 +595,12 @@ def make_caption(spec) -> str:
     tags = spec.get("hashtags") or [
         f"#{spec['grade']}수학", f"#{spec['unit'].replace(' ', '')}", *series, "#수학문제", "#수학릴스",
         "#민락동수학학원", "#ssenmath", "#의정부수학학원"]
+    tags += [t for t in ("#초등수학", "#사고력수학", "#수학퀴즈") if t not in tags and spec["grade"].startswith("초")]
+    # 검색용 키워드 줄: 인스타·쇼츠 검색은 캡션 앞부분 단어를 많이 본다
+    keywords = " · ".join(spec.get("keywords", []))
     caption = spec.get("caption") or (
-        f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n\n"
+        f"{spec.get('hook', '이 문제, 풀 수 있나요?').replace(chr(10), ' ')}\n"
+        + (f"{keywords}\n" if keywords else "") + "\n"
         f"{spec['problem'].replace(chr(10), ' ')}\n"
         + ("".join(f"{'ABCD'[i]}) {c}   " for i, c in enumerate(spec.get("choices", []))).rstrip()
            + "\n정답을 먼저 댓글로 골라주세요!\n" if spec.get("choices") else "")
@@ -577,6 +608,12 @@ def make_caption(spec) -> str:
         "정답과 풀이는 영상 끝에 있어요. 성공한 친구는 댓글에 손✋~\n\n"
         f"📍 {ACADEMY_NAME}")
     return f"{caption}\n\n{' '.join(tags)}"
+
+
+def shorts_title(spec) -> str:
+    """쇼츠 제목: 후킹 문구 + 검색어(학년 수학 퀴즈) + #shorts."""
+    hook = spec.get("hook", spec["unit"]).replace("\n", " ")
+    return spec.get("shorts_title") or f"{hook} | {spec['grade']} 수학 퀴즈 #shorts"
 
 
 def write_description(spec, out_dir: Path):
@@ -588,6 +625,7 @@ def write_description(spec, out_dir: Path):
         f"- 학년/단원: {spec['grade']} · {spec['unit']}\n"
         f"- 정답: {spec['answer']}\n"
         f"- 영상: reel.mp4 ({total:.0f}초) / 커버: cover.png\n\n"
+        f"## 유튜브 쇼츠 제목\n\n{shorts_title(spec)}\n\n"
         f"## 업로드용 캡션 (아래를 그대로 복사해서 붙여넣기)\n\n{make_caption(spec)}\n",
         encoding="utf-8")
 
