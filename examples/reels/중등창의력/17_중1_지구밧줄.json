@@ -1,0 +1,124 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "중1",
+  "unit": "원의 둘레",
+  "hook": "지구에 감은 밧줄 1m 늘리면\n틈은 얼마나 생길까?",
+  "hook_tag": "엄마도 헷갈리는 중1 문제",
+  "keywords": [
+    "중등 창의력 문제",
+    "중1 원의 둘레",
+    "지구 밧줄 문제"
+  ],
+  "problem": "지구 둘레에 딱 맞게 감은 밧줄을\n1m만 늘려 둥글게 띄우면\n땅과 밧줄 사이 틈은 얼마일까요?",
+  "figure": {
+    "w": 6,
+    "h": 6,
+    "items": [
+      {
+        "type": "circle",
+        "id": "earth",
+        "center": [
+          3,
+          3
+        ],
+        "r": 2.2,
+        "color": "blue"
+      },
+      {
+        "type": "circle",
+        "id": "rope",
+        "center": [
+          3,
+          3
+        ],
+        "r": 2.6,
+        "color": "orange"
+      },
+      {
+        "type": "label",
+        "id": "le",
+        "text": "지구",
+        "at": [
+          3,
+          3
+        ],
+        "size": 56
+      },
+      {
+        "type": "label",
+        "id": "lr",
+        "text": "밧줄",
+        "at": [
+          5.3,
+          0.6
+        ],
+        "size": 44
+      },
+      {
+        "type": "line",
+        "id": "gap",
+        "from": [
+          3,
+          0.8
+        ],
+        "to": [
+          3,
+          0.4
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "lg",
+        "text": "약 16cm",
+        "at": [
+          1.6,
+          0.25
+        ],
+        "size": 40,
+        "hidden": true,
+        "color": "coral"
+      }
+    ],
+    "focus": [
+      "rope"
+    ]
+  },
+  "choices": [
+    "거의 0",
+    "약 16cm",
+    "약 1m"
+  ],
+  "correct": 1,
+  "hint": "둘레 = 2 × 원주율(3.14) × 반지름. 반지름은 얼마나 늘어날까요?",
+  "steps": [
+    {
+      "text": "둘레 = 2 × 원주율(3.14) × 반지름",
+      "highlight": [
+        "earth"
+      ]
+    },
+    {
+      "text": "둘레가 1m 늘면 반지름은\n1 ÷ (2 × 3.14) ≈ 0.16m 늘어요",
+      "show": [
+        "gap",
+        "lg"
+      ]
+    },
+    {
+      "text": "지구 크기와 상관없이\n틈은 약 16cm!",
+      "highlight": [
+        "rope"
+      ]
+    }
+  ],
+  "answer": "약 16cm",
+  "answer_note": "'거의 0'이라고 했다면 함정!\n고양이가 지나갈 만한 틈이에요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 수학자들도 틀린 몬티홀 문제"
+}

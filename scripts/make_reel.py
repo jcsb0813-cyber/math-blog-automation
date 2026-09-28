@@ -312,7 +312,7 @@ def draw_choices(d, spec, top, alpha=1.0, reveal=False):
 
 # ---------------------------------------------------------------- figures (도형)
 # spec["figure"] = {"w": 10, "h": 8, "items": [...], "focus": [id, ...]}
-# item 종류: poly(points, fill), line(from, to, dash), path(points, 이어진 선), circle(center, r),
+# item 종류: poly(points, fill: true=연노랑 / 색이름=그 색 연하게), line(from, to, dash), path(points, 이어진 선), circle(center, r),
 #           dot(at, r), label(text, at, size). "color"로 강조색 지정 (coral/blue/green/orange/purple)
 # item에 "hidden": true를 주면 풀이 단계의 "show"에 들어갈 때 처음 나타난다.
 # 풀이 단계는 문자열 대신 {"text": ..., "highlight": [id], "show": [id]}로 쓸 수 있다.
@@ -440,11 +440,12 @@ def draw_figure(d, spec, box, build=1.0, t=0.0, highlight_ids=(), shown_ids=(), 
     extra = [build * n - i - 1 for i in range(n)]  # 완성된 뒤 지난 정도
     # 1) 채우기
     for k, (it, f, ex) in enumerate(zip(items, fracs, extra)):
-        if it["type"] != "poly" or f < 1:
+        if it["type"] != "poly" or f < 1 or it.get("nofill"):  # nofill: 테두리만 강조 (안쪽 색 유지)
             continue
         pts = [tf(p) for p in it["points"]]
         col = _color(it, k)
-        base = YELLOW_SOFT if it.get("fill") else None
+        fl = it.get("fill")
+        base = _light(PALETTE[fl], 0.45) if isinstance(fl, str) else (YELLOW_SOFT if fl else None)
         if it.get("id") in hl:
             other = PALETTE[PALETTE_ORDER[(k + 2) % len(PALETTE_ORDER)]]
             fill = tuple(int(_light(col, 0.75)[c] + (_light(other, 0.75)[c] - _light(col, 0.75)[c]) * pulse) for c in range(3))
