@@ -1,0 +1,228 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "중2",
+  "unit": "삼각형의 무게중심",
+  "hook": "무게중심 문제,\n6cm라고 하면 틀려요",
+  "hook_tag": "시험에 꼭 나오는 중2 도형",
+  "keywords": [
+    "중2 무게중심 기출",
+    "중등 도형 문제",
+    "삼각형 무게중심"
+  ],
+  "problem": "점 G는 삼각형 ABC의 무게중심,\n중선 AD의 길이가 12cm일 때\nAG의 길이는 몇 cm일까요?",
+  "figure": {
+    "w": 6.2,
+    "h": 5.6,
+    "items": [
+      {
+        "type": "poly",
+        "id": "abc",
+        "points": [
+          [
+            3,
+            0.4
+          ],
+          [
+            0.4,
+            5
+          ],
+          [
+            5.8,
+            5
+          ]
+        ],
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "AD",
+        "from": [
+          3,
+          0.4
+        ],
+        "to": [
+          3.1,
+          5.0
+        ],
+        "color": "coral"
+      },
+      {
+        "type": "dot",
+        "id": "G",
+        "at": [
+          3.067,
+          3.467
+        ],
+        "r": 0.13
+      },
+      {
+        "type": "label",
+        "id": "lA",
+        "text": "A",
+        "at": [
+          3,
+          0.05
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lB",
+        "text": "B",
+        "at": [
+          0.15,
+          5.35
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lC",
+        "text": "C",
+        "at": [
+          6.05,
+          5.35
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lD",
+        "text": "D",
+        "at": [
+          3,
+          5.4
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lG",
+        "text": "G",
+        "at": [
+          3.45,
+          3.35
+        ]
+      },
+      {
+        "type": "line",
+        "id": "BE",
+        "from": [
+          0.4,
+          5
+        ],
+        "to": [
+          4.4,
+          2.7
+        ],
+        "hidden": true,
+        "color": "green"
+      },
+      {
+        "type": "line",
+        "id": "CF",
+        "from": [
+          5.8,
+          5
+        ],
+        "to": [
+          1.7,
+          2.7
+        ],
+        "hidden": true,
+        "color": "purple"
+      },
+      {
+        "type": "line",
+        "id": "AG",
+        "from": [
+          3,
+          0.4
+        ],
+        "to": [
+          3.067,
+          3.467
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "GD",
+        "from": [
+          3.067,
+          3.467
+        ],
+        "to": [
+          3.1,
+          5.0
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "l2",
+        "text": "2",
+        "at": [
+          2.55,
+          2.1
+        ],
+        "hidden": true,
+        "color": "coral",
+        "size": 54
+      },
+      {
+        "type": "label",
+        "id": "l1",
+        "text": "1",
+        "at": [
+          2.6,
+          4.3
+        ],
+        "hidden": true,
+        "color": "blue",
+        "size": 54
+      }
+    ],
+    "focus": [
+      "AD"
+    ]
+  },
+  "choices": [
+    "6cm",
+    "8cm",
+    "4cm"
+  ],
+  "correct": 1,
+  "hint": "무게중심은 중선을 몇 대 몇으로 나눌까요?",
+  "steps": [
+    {
+      "text": "세 중선은 한 점 G에서 만나요",
+      "show": [
+        "BE",
+        "CF"
+      ]
+    },
+    {
+      "text": "G는 중선을 꼭짓점 쪽부터\n2 : 1로 나눠요",
+      "show": [
+        "AG",
+        "GD",
+        "l2",
+        "l1"
+      ]
+    },
+    {
+      "text": "AG = 12 × 2/3 = 8cm",
+      "highlight": [
+        "AG",
+        "l2"
+      ]
+    }
+  ],
+  "answer": "8cm",
+  "answer_note": "6cm라고 했다면 함정!\n반이 아니라 2 : 1로 나눠요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 중심각 110°면 원주각은?"
+}

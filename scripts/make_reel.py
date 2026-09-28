@@ -313,7 +313,9 @@ def draw_choices(d, spec, top, alpha=1.0, reveal=False):
 # ---------------------------------------------------------------- figures (도형)
 # spec["figure"] = {"w": 10, "h": 8, "items": [...], "focus": [id, ...]}
 # item 종류: poly(points, fill: true=연노랑 / 색이름=그 색 연하게), line(from, to, dash), path(points, 이어진 선), circle(center, r),
-#           dot(at, r), label(text, at, size). "color"로 강조색 지정 (coral/blue/green/orange/purple)
+#           dot(at, r), label(text, at, size), angle(at, from, to, r, label: 색칠한 부채꼴로 각 표시).
+#           풀이 단계에서 새로 나오는 항목에 "move_from": [dx, dy]를 주면 그만큼 떨어진 곳에서 미끄러져 온다.
+#           "color"로 강조색 지정 (coral/blue/green/orange/purple)
 # item에 "hidden": true를 주면 풀이 단계의 "show"에 들어갈 때 처음 나타난다.
 # 풀이 단계는 문자열 대신 {"text": ..., "highlight": [id], "show": [id]}로 쓸 수 있다.
 
@@ -438,11 +440,19 @@ def draw_figure(d, spec, box, build=1.0, t=0.0, highlight_ids=(), shown_ids=(), 
     new_f = ease_out(new_t / 1.1)
     fracs = [max(0.0, min(1.0, build * n - i)) for i in range(n)]
     extra = [build * n - i - 1 for i in range(n)]  # 완성된 뒤 지난 정도
+
+    def tfi(it):
+        """move_from이 있는 새 항목은 그 위치에서 제자리로 미끄러져 들어온다."""
+        if it.get("id") in new and "move_from" in it:
+            ox, oy = (1 - new_f) * it["move_from"][0], (1 - new_f) * it["move_from"][1]
+            return lambda p: tf((p[0] + ox, p[1] + oy))
+        return tf
+
     # 1) 채우기
     for k, (it, f, ex) in enumerate(zip(items, fracs, extra)):
         if it["type"] != "poly" or f < 1 or it.get("nofill"):  # nofill: 테두리만 강조 (안쪽 색 유지)
             continue
-        pts = [tf(p) for p in it["points"]]
+        pts = [tfi(it)(p) for p in it["points"]]
         col = _color(it, k)
         fl = it.get("fill")
         base = _light(PALETTE[fl], 0.45) if isinstance(fl, str) else (YELLOW_SOFT if fl else None)
@@ -452,19 +462,37 @@ def draw_figure(d, spec, box, build=1.0, t=0.0, highlight_ids=(), shown_ids=(), 
         elif it.get("id") in focus:
             fill = _fade(_light(col, 0.55), 0.4 + 0.6 * pulse, base or PAPER)
         elif it.get("id") in new:
-            fill = _fade(_light(col, 0.5), new_f, base or PAPER)
+            fill = _light(col, 0.6) if "move_from" in it else _fade(_light(col, 0.5), new_f, base or PAPER)
         elif 0 <= ex < 0.9 and build < 5:  # 완성 순간 번쩍 → 원래 색으로
             fill = _fade(_light(col, 0.7), 1 - ex / 0.9, base or PAPER)
         else:
             fill = base
         if fill:
             d.polygon(pts, fill=fill)
+    # 1.5) 각 (색칠한 부채꼴): angle(at, from, to, r, label)
+    for k, (it, f) in enumerate(zip(items, fracs)):
+        if it["type"] != "angle" or f <= 0:
+            continue
+        g = new_f if it.get("id") in new else f
+        col = _color(it, k)
+        on = it.get("id") in hl
+        vx, vy = tf(it["at"])
+        a1, a2 = (math.degrees(math.atan2(tf(q)[1] - vy, tf(q)[0] - vx)) for q in (it["from"], it["to"]))
+        if (a2 - a1) % 360 > 180:
+            a1, a2 = a2, a1
+        r = it.get("r", 0.6) * sc * ease_out(g) * (1 + (0.15 * pulse if on else 0))
+        box_ = (vx - r, vy - r, vx + r, vy + r)
+        d.pieslice(box_, a1, a1 + (a2 - a1) % 360, fill=_light(col, 0.55 + (0.4 * pulse if on else 0)))
+        d.arc(box_, a1, a1 + (a2 - a1) % 360, fill=col, width=6)
     # 2) 선
     for k, (it, f) in enumerate(zip(items, fracs)):
-        if it["type"] in ("label", "dot") or f <= 0:
+        if it["type"] in ("label", "dot", "angle") or f <= 0:
             continue
-        path = _item_path(it, tf, sc)
+        path = _item_path(it, tfi(it), sc)
         col = _color(it, k)
+        if it.get("id") in new and "move_from" in it:  # 미끄러져 오는 도형: 선 전체를 색으로
+            _stroke(d, path, col, STROKE + 3)
+            continue
         if it.get("id") in new:
             part = _partial(path, new_f)
             _stroke(d, part, _light(col, 0.45), STROKE + 14)
@@ -486,6 +514,20 @@ def draw_figure(d, spec, box, build=1.0, t=0.0, highlight_ids=(), shown_ids=(), 
             _comet(d, _item_path(it, tf, sc), (t * 0.55 + k * 0.3) % 1.0, col)
     # 3) 점과 글자 (톡 튀어나오며 등장)
     for k, (it, f) in enumerate(zip(items, fracs)):
+        if it["type"] == "angle" and it.get("label") and f > 0:  # 각 이름표: 부채꼴 가운데 방향 바깥
+            g = new_f if it.get("id") in new else f
+            vx, vy = tf(it["at"])
+            u = [(tf(q)[0] - vx, tf(q)[1] - vy) for q in (it["from"], it["to"])]
+            u = [(a / (math.hypot(a, b) or 1), b / (math.hypot(a, b) or 1)) for a, b in u]
+            bx, by = u[0][0] + u[1][0], u[0][1] + u[1][1]
+            L = math.hypot(bx, by) or 1
+            dist = it.get("r", 0.6) * sc * it.get("label_dist", 1.7)
+            x, y = vx + bx / L * dist, vy + by / L * dist
+            fnt = font(int(it.get("size", 40) * (0.6 + 0.4 * ease_out(g))), "extrabold")
+            bb = fnt.getbbox(it["label"])
+            d.text((x - (bb[2] + bb[0]) / 2, y - (bb[3] + bb[1]) / 2), it["label"], font=fnt,
+                   fill=_fade(_color(it, k), g, PAPER))
+            continue
         if it["type"] not in ("label", "dot") or f <= 0:
             continue
         g = new_f if it.get("id") in new else f

@@ -1,0 +1,182 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초3",
+  "unit": "원",
+  "hook": "큰 원 속 작은 원 3개,\n반지름은 몇 cm?",
+  "hook_tag": "시험에 꼭 나오는 초3 도형",
+  "keywords": [
+    "초3 원 단원평가",
+    "초등 도형 문제",
+    "원의 반지름 지름"
+  ],
+  "problem": "지름이 24cm인 큰 원 안에\n똑같은 작은 원 3개가 꼭 맞게 있어요.\n작은 원의 반지름은 몇 cm일까요?",
+  "figure": {
+    "w": 6,
+    "h": 6,
+    "items": [
+      {
+        "type": "circle",
+        "id": "big",
+        "center": [
+          3,
+          3
+        ],
+        "r": 2.7,
+        "color": "blue"
+      },
+      {
+        "type": "circle",
+        "id": "s0",
+        "center": [
+          1.2,
+          3
+        ],
+        "r": 0.9,
+        "color": "coral"
+      },
+      {
+        "type": "circle",
+        "id": "s1",
+        "center": [
+          3,
+          3
+        ],
+        "r": 0.9,
+        "color": "green"
+      },
+      {
+        "type": "circle",
+        "id": "s2",
+        "center": [
+          4.8,
+          3
+        ],
+        "r": 0.9,
+        "color": "purple"
+      },
+      {
+        "type": "line",
+        "id": "dia",
+        "from": [
+          0.2999999999999998,
+          3
+        ],
+        "to": [
+          5.7,
+          3
+        ],
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "label",
+        "id": "l24",
+        "text": "24cm",
+        "at": [
+          3,
+          1.25
+        ],
+        "size": 48,
+        "hidden": true,
+        "color": "blue"
+      },
+      {
+        "type": "line",
+        "id": "d0",
+        "from": [
+          0.29999999999999993,
+          3
+        ],
+        "to": [
+          2.1,
+          3
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "label",
+        "id": "l8",
+        "text": "8cm",
+        "at": [
+          1.2,
+          4.2
+        ],
+        "size": 44,
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "line",
+        "id": "r0",
+        "from": [
+          1.2,
+          3
+        ],
+        "to": [
+          2.1,
+          3
+        ],
+        "hidden": true,
+        "color": "orange"
+      },
+      {
+        "type": "dot",
+        "id": "o0",
+        "at": [
+          1.2,
+          3
+        ],
+        "hidden": true,
+        "color": "orange"
+      }
+    ],
+    "focus": [
+      "big"
+    ]
+  },
+  "choices": [
+    "8cm",
+    "4cm",
+    "12cm"
+  ],
+  "correct": 1,
+  "hint": "작은 원 3개의 지름을 이으면 무엇과 같을까요?",
+  "steps": [
+    {
+      "text": "작은 원 3개의 지름을 이으면\n큰 원의 지름 24cm",
+      "show": [
+        "dia",
+        "l24"
+      ]
+    },
+    {
+      "text": "작은 원 지름 = 24 ÷ 3 = 8cm",
+      "show": [
+        "d0",
+        "l8"
+      ],
+      "highlight": [
+        "s0"
+      ]
+    },
+    {
+      "text": "반지름은 지름의 절반\n8 ÷ 2 = 4cm",
+      "show": [
+        "r0",
+        "o0"
+      ],
+      "highlight": [
+        "r0"
+      ]
+    }
+  ],
+  "answer": "4cm",
+  "answer_note": "8cm라고 했다면 함정!\n지름이 아니라 반지름을 물었어요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 삼각자 두 개 사이 ∠x는 몇 도?"
+}

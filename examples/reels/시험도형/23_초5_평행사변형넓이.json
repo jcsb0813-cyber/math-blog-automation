@@ -1,0 +1,196 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초5",
+  "unit": "평행사변형의 넓이",
+  "hook": "평행사변형 넓이\n40cm²일까?",
+  "hook_tag": "시험에 꼭 나오는 초5 도형",
+  "keywords": [
+    "초5 넓이 단원평가",
+    "초등 도형 문제",
+    "평행사변형 넓이"
+  ],
+  "problem": "밑변 8cm, 옆변 5cm, 높이 4cm인\n평행사변형의 넓이는 몇 cm²일까요?",
+  "figure": {
+    "w": 11.8,
+    "h": 5.3,
+    "items": [
+      {
+        "type": "poly",
+        "id": "pg",
+        "points": [
+          [
+            0.3,
+            4.5
+          ],
+          [
+            8.3,
+            4.5
+          ],
+          [
+            11.3,
+            0.5
+          ],
+          [
+            3.3,
+            0.5
+          ]
+        ],
+        "fill": true,
+        "color": "orange"
+      },
+      {
+        "type": "line",
+        "id": "h",
+        "from": [
+          3.3,
+          0.5
+        ],
+        "to": [
+          3.3,
+          4.5
+        ],
+        "dash": true
+      },
+      {
+        "type": "label",
+        "id": "lb",
+        "text": "8cm",
+        "at": [
+          4.3,
+          5.0
+        ]
+      },
+      {
+        "type": "label",
+        "id": "ls",
+        "text": "5cm",
+        "at": [
+          1.1,
+          2.3
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lh",
+        "text": "4cm",
+        "at": [
+          4.0,
+          2.6
+        ]
+      },
+      {
+        "type": "poly",
+        "id": "tri",
+        "points": [
+          [
+            0.3,
+            4.5
+          ],
+          [
+            3.3,
+            4.5
+          ],
+          [
+            3.3,
+            0.5
+          ]
+        ],
+        "hidden": true,
+        "color": "coral"
+      },
+      {
+        "type": "poly",
+        "id": "moved",
+        "points": [
+          [
+            8.3,
+            4.5
+          ],
+          [
+            11.3,
+            4.5
+          ],
+          [
+            11.3,
+            0.5
+          ]
+        ],
+        "hidden": true,
+        "color": "coral",
+        "move_from": [
+          -8,
+          0
+        ]
+      },
+      {
+        "type": "poly",
+        "id": "rect",
+        "points": [
+          [
+            3.3,
+            4.5
+          ],
+          [
+            11.3,
+            4.5
+          ],
+          [
+            11.3,
+            0.5
+          ],
+          [
+            3.3,
+            0.5
+          ]
+        ],
+        "hidden": true,
+        "nofill": false,
+        "color": "green"
+      }
+    ],
+    "focus": [
+      "pg"
+    ]
+  },
+  "choices": [
+    "40cm²",
+    "32cm²",
+    "20cm²"
+  ],
+  "correct": 1,
+  "hint": "삼각형 하나를 잘라 옮겨 보세요.",
+  "steps": [
+    {
+      "text": "왼쪽 삼각형을 잘라서",
+      "show": [
+        "tri"
+      ],
+      "highlight": [
+        "tri"
+      ]
+    },
+    {
+      "text": "오른쪽으로 옮기면 직사각형!",
+      "show": [
+        "moved"
+      ]
+    },
+    {
+      "text": "가로 8cm × 세로 4cm = 32cm²",
+      "show": [
+        "rect"
+      ],
+      "highlight": [
+        "rect"
+      ]
+    }
+  ],
+  "answer": "32cm²",
+  "answer_note": "40cm²라고 했다면 함정!\n옆변 5cm가 아니라 높이를 곱해요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "다음 편: 시험에 꼭 나오는 나뭇잎 모양 넓이"
+}
