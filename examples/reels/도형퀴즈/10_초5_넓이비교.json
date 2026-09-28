@@ -1,0 +1,192 @@
+{
+  "series": "엄마도 헷갈리는 문제",
+  "grade": "초5",
+  "unit": "삼각형의 넓이",
+  "hook": "더 커 보이는 삼각형,\n진짜 더 넓을까?",
+  "hook_tag": "엄마도 헷갈리는 초5 문제",
+  "keywords": [
+    "초등 도형 문제",
+    "초5 삼각형 넓이",
+    "넓이 비교"
+  ],
+  "problem": "두 평행선 사이에 있는\n삼각형 가와 나 중\n어느 쪽이 더 넓을까요?",
+  "figure": {
+    "w": 9,
+    "h": 5,
+    "items": [
+      {
+        "type": "line",
+        "id": "p1",
+        "from": [
+          0,
+          0.5
+        ],
+        "to": [
+          9,
+          0.5
+        ],
+        "dash": true
+      },
+      {
+        "type": "line",
+        "id": "p2",
+        "from": [
+          0,
+          4
+        ],
+        "to": [
+          9,
+          4
+        ],
+        "dash": true
+      },
+      {
+        "type": "poly",
+        "id": "A",
+        "points": [
+          [
+            2,
+            0.5
+          ],
+          [
+            0.5,
+            4
+          ],
+          [
+            3.5,
+            4
+          ]
+        ],
+        "fill": true
+      },
+      {
+        "type": "poly",
+        "id": "B",
+        "points": [
+          [
+            8.2,
+            0.5
+          ],
+          [
+            4.5,
+            4
+          ],
+          [
+            7.5,
+            4
+          ]
+        ],
+        "fill": true
+      },
+      {
+        "type": "label",
+        "id": "la",
+        "text": "가",
+        "at": [
+          2,
+          3
+        ]
+      },
+      {
+        "type": "label",
+        "id": "lb",
+        "text": "나",
+        "at": [
+          6.6,
+          3
+        ]
+      },
+      {
+        "type": "label",
+        "id": "bA",
+        "text": "3cm",
+        "at": [
+          2,
+          4.55
+        ]
+      },
+      {
+        "type": "label",
+        "id": "bB",
+        "text": "3cm",
+        "at": [
+          6,
+          4.55
+        ]
+      },
+      {
+        "type": "line",
+        "id": "hA",
+        "from": [
+          2,
+          0.5
+        ],
+        "to": [
+          2,
+          4
+        ],
+        "dash": true,
+        "hidden": true
+      },
+      {
+        "type": "line",
+        "id": "hB",
+        "from": [
+          8.2,
+          0.5
+        ],
+        "to": [
+          8.2,
+          4
+        ],
+        "dash": true,
+        "hidden": true
+      }
+    ],
+    "focus": [
+      "B"
+    ]
+  },
+  "choices": [
+    "가",
+    "나",
+    "같다"
+  ],
+  "correct": 2,
+  "hint": "밑변과 높이를 비교해 보세요.",
+  "steps": [
+    {
+      "text": "두 삼각형 모두 밑변 3cm",
+      "highlight": [
+        "bA",
+        "bB"
+      ]
+    },
+    {
+      "text": "꼭짓점이 같은 평행선 위에 있어\n높이도 똑같아요",
+      "highlight": [
+        "hA",
+        "hB"
+      ],
+      "show": [
+        "hA",
+        "hB"
+      ]
+    },
+    {
+      "text": "넓이 = 밑변 × 높이 ÷ 2\n→ 가와 나의 넓이는 같아요",
+      "highlight": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "answer": "같다",
+  "answer_note": "'나'라고 했다면 함정!\n기울어져도 밑변·높이가 같으면 넓이도 같아요",
+  "timing": {
+    "hook": 2.0,
+    "problem": 5.0,
+    "step": 3.5
+  },
+  "cta_sub": "저장해두고 아이와 함께 풀어보세요"
+}

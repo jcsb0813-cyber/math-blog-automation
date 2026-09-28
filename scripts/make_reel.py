@@ -309,6 +309,144 @@ def draw_choices(d, spec, top, alpha=1.0, reveal=False):
     return top + h
 
 
+
+# ---------------------------------------------------------------- figures (도형)
+# spec["figure"] = {"w": 10, "h": 8, "items": [...], "focus": [id, ...]}
+# item 종류: poly(points, fill), line(from, to, dash), circle(center, r), label(text, at, size)
+# item에 "hidden": true를 주면 풀이 단계의 "show"에 들어갈 때 처음 나타난다.
+# 풀이 단계는 문자열 대신 {"text": ..., "highlight": [id], "show": [id]}로 쓸 수 있다.
+
+ORANGE = (255, 150, 0)
+STROKE = 9
+
+
+def step_text(step) -> str:
+    return step if isinstance(step, str) else step["text"]
+
+
+def _fig_transform(fig, box):
+    x0, y0, x1, y1 = box
+    pad = 50
+    sc = min((x1 - x0 - 2 * pad) / fig["w"], (y1 - y0 - 2 * pad) / fig["h"])
+    ox = x0 + (x1 - x0 - fig["w"] * sc) / 2
+    oy = y0 + (y1 - y0 - fig["h"] * sc) / 2
+    return lambda pt: (ox + pt[0] * sc, oy + pt[1] * sc), sc
+
+
+def _item_path(it, tf, sc):
+    """선으로 그릴 점 목록 (닫힌 도형은 첫 점을 끝에 다시 붙임)."""
+    if it["type"] == "poly":
+        pts = [tf(p) for p in it["points"]]
+        return pts + [pts[0]]
+    if it["type"] == "line":
+        return [tf(it["from"]), tf(it["to"])]
+    if it["type"] == "circle":
+        cx, cy = tf(it["center"])
+        r = it["r"] * sc
+        return [(cx + r * math.cos(a / 48 * 2 * math.pi), cy + r * math.sin(a / 48 * 2 * math.pi)) for a in range(49)]
+    return []
+
+
+def _partial(path, frac):
+    """경로의 앞부분 frac(0~1)만 잘라서 반환 — 선이 그려지는 애니메이션."""
+    if frac >= 1 or len(path) < 2:
+        return path
+    segs = [math.dist(path[i], path[i + 1]) for i in range(len(path) - 1)]
+    goal, out = sum(segs) * max(0.0, frac), [path[0]]
+    for i, L in enumerate(segs):
+        if goal <= L:
+            a, b = path[i], path[i + 1]
+            k = goal / L if L else 0
+            out.append((a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k))
+            return out
+        goal -= L
+        out.append(path[i + 1])
+    return out
+
+
+def _stroke(d, path, color, width, dash=False):
+    if len(path) < 2:
+        return
+    if not dash:
+        d.line(path, fill=color, width=width, joint="curve")
+        for x, y in (path[0], path[-1]):
+            d.ellipse((x - width / 2, y - width / 2, x + width / 2, y + width / 2), fill=color)
+        return
+    for i in range(len(path) - 1):
+        (ax, ay), (bx, by) = path[i], path[i + 1]
+        L = math.dist((ax, ay), (bx, by))
+        pos = 0.0
+        while pos < L:
+            e = min(pos + 22, L)
+            d.line(((ax + (bx - ax) * pos / L, ay + (by - ay) * pos / L),
+                    (ax + (bx - ax) * e / L, ay + (by - ay) * e / L)), fill=color, width=width)
+            pos += 38
+
+
+def _sparkle(d, x, y, size, color=ORANGE):
+    """반짝이는 4꼭지 별."""
+    s, w = size, size * 0.28
+    d.polygon([(x, y - s), (x + w, y - w), (x + s, y), (x + w, y + w),
+               (x, y + s), (x - w, y + w), (x - s, y), (x - w, y - w)], fill=color)
+
+
+def draw_figure(d, spec, box, build=1.0, t=0.0, highlight_ids=(), shown_ids=(), sparkle=False):
+    """도형 그리기. build<1이면 선이 차례로 그려지는 중, highlight_ids는 깜빡이며 강조, sparkle은 focus에 별."""
+    fig = spec["figure"]
+    tf, sc = _fig_transform(fig, box)
+    items = [it for it in fig["items"] if not it.get("hidden") or it.get("id") in shown_ids]
+    n = max(1, len(items))
+    pulse = 0.5 + 0.5 * math.sin(t * 2 * math.pi * 1.6)  # 깜빡임 (초당 1.6번)
+    hl = set(highlight_ids)
+    fracs = [max(0.0, min(1.0, build * n - i)) for i in range(n)]  # 아이템별 그려진 정도
+    # 1) 채우기 (다 그려진 도형만)
+    for it, f in zip(items, fracs):
+        if it["type"] == "poly" and f >= 1:
+            pts = [tf(p) for p in it["points"]]
+            if it.get("id") in hl:
+                d.polygon(pts, fill=_fade(YELLOW, 0.45 + 0.55 * pulse, YELLOW_SOFT))
+            elif it.get("fill"):
+                d.polygon(pts, fill=YELLOW_SOFT)
+    # 2) 선
+    for it, f in zip(items, fracs):
+        if it["type"] == "label" or f <= 0:
+            continue
+        path = _partial(_item_path(it, tf, sc), f)
+        on = it.get("id") in hl
+        if on:
+            _stroke(d, path, _fade(YELLOW, pulse, PAPER), STROKE + 16)
+        _stroke(d, path, RED if on else (GRAY if it.get("dash") else INK),
+                STROKE + (3 if on else 0), dash=it.get("dash", False))
+        if f < 1 and path:  # 그리는 중인 펜 끝
+            x, y = path[-1]
+            d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=ORANGE)
+    # 3) 글자 (톡 튀어나오며 등장)
+    for it, f in zip(items, fracs):
+        if it["type"] != "label" or f <= 0:
+            continue
+        size = int(it.get("size", 46) * (0.6 + 0.4 * ease_out(f)))
+        fnt = font(size, "extrabold")
+        x, y = tf(it["at"])
+        on = it.get("id") in hl
+        col = RED if on else INK
+        bb = fnt.getbbox(it["text"])
+        d.text((x - (bb[2] + bb[0]) / 2, y - (bb[3] + bb[1]) / 2), it["text"], font=fnt, fill=_fade(col, f, PAPER))
+    # 4) 반짝이 별 (생각할 시간)
+    if sparkle:
+        for k, fid in enumerate(fig.get("focus", [])):
+            it = next((i for i in items if i.get("id") == fid), None)
+            if not it:
+                continue
+            pts = [tf(p) for p in it.get("points", [])] or ([tf(it["at"])] if "at" in it else [tf(it["from"]), tf(it["to"])] if "from" in it else [])
+            if not pts:
+                continue
+            cx = sum(p[0] for p in pts) / len(pts)
+            cy = sum(p[1] for p in pts) / len(pts)
+            for j, (dx, dy) in enumerate(((-70, -60), (80, -30), (-20, 70))):
+                tw = abs(math.sin(t * 3.2 + j * 1.3 + k))
+                _sparkle(d, cx + dx, cy + dy, 14 + 22 * tw)
+    return box[3]
+
 # ---------------------------------------------------------------- scenes
 # 각 scene 함수는 (spec, t, dur) -> Image 형태. t는 장면 시작부터의 초.
 
@@ -333,11 +471,24 @@ def scene_hook(spec, t, dur):
     return img
 
 
+def _fig_box(card_bottom):
+    """문제 카드 아래 도형 영역: 보기(150) + 작은 타이머(160)가 학원명 위에 들어가도록 최대한 크게."""
+    h = max(420, min(660, H - 400 - card_bottom - 20 - 20 - 150 - 30 - 160))
+    return (MARGIN, card_bottom + 20, W - MARGIN, card_bottom + 20 + h)
+
+
 def scene_problem(spec, t, dur):
     img, d = base_frame(spec)
     p = ease_out(t / 0.6)
     top = 300 + (1 - p) * 60
-    bottom = problem_card(d, spec, top, alpha=p)
+    bottom = problem_card(d, spec, top, alpha=p, compact="figure" in spec)
+    if spec.get("figure"):
+        # 선이 하나씩 그려짐 (0.3초 후 시작, 2.2초 동안)
+        bottom = draw_figure(d, spec, _fig_box(bottom),
+                             build=(t - 0.3) / 2.2, t=t)
+        if spec.get("choices"):
+            draw_choices(d, spec, bottom + 20, alpha=ease_out((t - 2.4) / 0.4))
+        return img
     if spec.get("choices"):
         bottom = draw_choices(d, spec, bottom + 40, alpha=ease_out((t - 0.5) / 0.5))
     if t > 1.0:
@@ -350,18 +501,32 @@ def scene_problem(spec, t, dur):
 def scene_think(spec, t, dur):
     img, d = base_frame(spec)
     bottom = problem_card(d, spec, 300, compact=True)
-    bottom = draw_choices(d, spec, bottom + 30)
     total = dur
     remain = max(0, math.ceil(total - t))
+    if spec.get("figure"):
+        # 도형 + 봐야 할 곳에 반짝이 별, 타이머는 보기 아래에 작게
+        bottom = draw_figure(d, spec, _fig_box(bottom), t=t, sparkle=True)
+        bottom = draw_choices(d, spec, bottom + 20)
+        r = 80
+        cx, cy = W / 2, bottom + 30 + r
+        _draw_timer(d, cx, cy, r, t, total, remain, label=False)
+        return img
+    bottom = draw_choices(d, spec, bottom + 30)
     # 원형 타이머
     # 타이머 + "생각할 시간" 라벨이 하단 학원명(H - 330)과 겹치지 않도록 남은 공간에 맞춘다
     avail = H - 360 - bottom - 100
     r = max(100, min(230, avail / 2 - 20))
     cx, cy = W / 2, bottom + 20 + avail / 2
-    d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=(230, 225, 205), width=28)
+    _draw_timer(d, cx, cy, r, t, total, remain)
+    return img
+
+
+def _draw_timer(d, cx, cy, r, t, total, remain, label=True):
+    ring = max(14, int(r * 0.12))
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=(230, 225, 205), width=ring)
     frac = min(1.0, t / total)
     d.arc((cx - r, cy - r, cx + r, cy + r), start=-90, end=-90 + 360 * (1 - frac),
-          fill=RED if remain <= 2 else YELLOW, width=28)
+          fill=RED if remain <= 2 else YELLOW, width=ring)
     # 숫자는 초가 바뀔 때마다 살짝 튀어오름
     beat = t - math.floor(t)
     scale = 1.0 + 0.18 * max(0.0, 1 - beat / 0.25)
@@ -371,18 +536,22 @@ def scene_think(spec, t, dur):
     bbox = fnt.getbbox(num)
     d.text((cx - (bbox[2] + bbox[0]) / 2, cy - (bbox[3] + bbox[1]) / 2), num, font=fnt,
            fill=RED if remain <= 2 else INK)
-    lbl = "생각할 시간"
-    fl = font(44)
-    d.text(((W - fl.getlength(lbl)) / 2, cy + r + 36), lbl, font=fl, fill=GRAY)
-    return img
+    if label:
+        lbl = "생각할 시간"
+        fl = font(44)
+        d.text(((W - fl.getlength(lbl)) / 2, cy + r + 36), lbl, font=fl, fill=GRAY)
 
 
 def scene_hint(spec, t, dur):
     img, d = base_frame(spec)
     bottom = problem_card(d, spec, 300, compact=True)
-    bottom = draw_choices(d, spec, bottom + 30)
+    if spec.get("figure"):
+        bottom = draw_figure(d, spec, _fig_box(bottom), t=t,
+                             highlight_ids=spec["figure"].get("focus", []))
+    else:
+        bottom = draw_choices(d, spec, bottom + 30)
     p = ease_out(t / 0.5)
-    top = bottom + 80 + (1 - p) * 40
+    top = bottom + (30 if spec.get("figure") else 80) + (1 - p) * 40
     hint_h = measure_block(spec["hint"], 58, max_width=W - 2 * MARGIN - 80)
     d.rounded_rectangle((MARGIN, top, W - MARGIN, top + hint_h + 150), radius=32,
                         fill=_fade(YELLOW_SOFT, p, PAPER))
@@ -405,14 +574,23 @@ def _step_text_width():
 def make_scene_steps(n_visible):
     def scene(spec, t, dur):
         img, d = base_frame(spec)
-        steps = spec["steps"]
+        steps = [step_text(x) for x in spec["steps"]]
+        size, gap = (52, 34) if spec.get("figure") else (STEP_SIZE, STEP_GAP)
         # 모든 단계가 다 나왔을 때 기준으로 세로 가운데 정렬 → 단계가 추가돼도 위치가 흔들리지 않음
-        heights = [measure_block(s, STEP_SIZE, max_width=_step_text_width()) for s in steps]
-        block_h = 130 + sum(heights) + STEP_GAP * (len(steps) - 1)
-        y = max(260, (H - 330 - block_h) / 2)
-        highlight(d, MARGIN - 8, y + 54, MARGIN + 170, y + 92)
-        d.text((MARGIN, y), "풀이", font=font(80, "extrabold"), fill=INK)
-        y += 150
+        heights = [measure_block(x, size, max_width=_step_text_width()) for x in steps]
+        if spec.get("figure"):
+            # 위에 도형: 지금 단계가 가리키는 부분이 깜빡이고, 보조선이 새로 그려진다
+            shown = {i for st in spec["steps"][:n_visible] if isinstance(st, dict) for i in st.get("show", [])}
+            cur = spec["steps"][n_visible - 1]
+            hl = cur.get("highlight", []) if isinstance(cur, dict) else []
+            y = draw_figure(d, spec, (MARGIN, 220, W - MARGIN, 220 + 560), t=t,
+                            highlight_ids=hl, shown_ids=shown) + 30
+        else:
+            block_h = 130 + sum(heights) + gap * (len(steps) - 1)
+            y = max(260, (H - 330 - block_h) / 2)
+            highlight(d, MARGIN - 8, y + 54, MARGIN + 170, y + 92)
+            d.text((MARGIN, y), "풀이", font=font(80, "extrabold"), fill=INK)
+            y += 150
         for i in range(n_visible):
             is_new = i == n_visible - 1
             p = ease_out(t / 0.5) if is_new else 1.0
@@ -422,9 +600,9 @@ def make_scene_steps(n_visible):
             fn = font(44, "extrabold")
             num = str(i + 1)
             d.text((MARGIN + NUM_R - fn.getlength(num) / 2, ny + 16), num, font=fn, fill=_fade(INK, p, PAPER))
-            text_block(d, steps[i], y + (1 - p) * 30, STEP_SIZE, color=INK if is_new else GRAY,
+            text_block(d, steps[i], y + (1 - p) * 30, size, color=INK if is_new else GRAY,
                        align="left", x_offset=2 * NUM_R + 34, max_width=_step_text_width(), alpha=p)
-            y += heights[i] + STEP_GAP
+            y += heights[i] + gap
         return img
     return scene
 
@@ -528,8 +706,9 @@ def validate(spec):
     missing = [k for k in ("grade", "unit", "problem", "steps", "answer") if not spec.get(k)]
     if missing:
         sys.exit(f"스펙에 필수 항목이 없습니다: {', '.join(missing)}")
-    if not isinstance(spec["steps"], list):
-        sys.exit("steps는 문자열 리스트여야 합니다.")
+    if not isinstance(spec["steps"], list) or not all(
+            isinstance(x, str) or (isinstance(x, dict) and "text" in x) for x in spec["steps"]):
+        sys.exit("steps는 문자열(또는 {\"text\": ...}) 리스트여야 합니다.")
     if len(spec["steps"]) > 5:
         sys.exit("풀이 단계는 5개 이하로 줄여주세요 (릴스는 짧아야 합니다).")
     if spec.get("choices"):
