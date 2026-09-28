@@ -153,6 +153,66 @@
       "trendSource": "issue",
       "cliffhanger_from": null,
       "cliffhanger_to": null
+    },
+    {
+      "id": "hat_tile_chiral_light",
+      "file": "reels/storyboards/hat_tile_chiral_light.js",
+      "series": "daily-issues",
+      "seriesIndex": 1,
+      "date": "2026-09-28",
+      "topic_ko": "아인슈타인 타일이 빛을 꼬았다 (카이랄 회절 발견)",
+      "techniques": ["aperiodic-tile-tessellation-reveal", "diffraction-pinwheel-burst"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "wordle_entropy",
+      "file": "reels/storyboards/wordle_entropy.js",
+      "series": "daily-issues",
+      "seriesIndex": 2,
+      "date": "2026-09-28",
+      "topic_ko": "워들을 수학으로 풀면 99% 이긴다 (섀넌 엔트로피)",
+      "techniques": ["wordle-grid-demo", "radial-gauge-reveal"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "monty_hall_simulation",
+      "file": "reels/storyboards/monty_hall_simulation.js",
+      "series": "daily-issues",
+      "seriesIndex": 3,
+      "date": "2026-09-28",
+      "topic_ko": "문을 바꿔야 하는 이유 (몬티홀 문제)",
+      "techniques": ["door-reveal-sequence", "monte-carlo-frame-fill-race"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "benford_law_fraud",
+      "file": "reels/storyboards/benford_law_fraud.js",
+      "series": "daily-issues",
+      "seriesIndex": 4,
+      "date": "2026-09-28",
+      "topic_ko": "숫자 첫자리로 가짜를 잡아낸다 (벤포드의 법칙)",
+      "techniques": ["digit-histogram-reveal"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "birthday_paradox",
+      "file": "reels/storyboards/birthday_paradox.js",
+      "series": "daily-issues",
+      "seriesIndex": 5,
+      "date": "2026-09-28",
+      "topic_ko": "23명만 모이면 생일이 겹친다? (생일 역설)",
+      "techniques": ["probability-curve-climb-reveal", "crowd-dot-accumulation"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
     }
   ]
 }
