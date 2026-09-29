@@ -213,6 +213,66 @@
       "trendSource": "viral",
       "cliffhanger_from": null,
       "cliffhanger_to": null
+    },
+    {
+      "id": "zeta5_ai_proof",
+      "file": "reels/storyboards/zeta5_ai_proof.js",
+      "series": "daily-issues",
+      "seriesIndex": 1,
+      "date": "2026-09-29",
+      "topic_ko": "300년 못 푼 문제, AI 검증까지 끝났다 (ζ(5) 무리수 증명)",
+      "techniques": ["proof-checklist-reveal"],
+      "trendSource": "issue",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "checker_shadow_illusion",
+      "file": "reels/storyboards/checker_shadow_illusion.js",
+      "series": "daily-issues",
+      "seriesIndex": 2,
+      "date": "2026-09-29",
+      "topic_ko": "이 두 칸, 진짜 같은 색이라고? (체커 그림자 착시)",
+      "techniques": ["color-sampling-proof-reveal"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "simpsons_paradox",
+      "file": "reels/storyboards/simpsons_paradox.js",
+      "series": "daily-issues",
+      "seriesIndex": 3,
+      "date": "2026-09-29",
+      "topic_ko": "부서마다는 유리한데 전체론 불리하다? (심슨의 역설)",
+      "techniques": ["aggregate-reversal-reveal"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "gabriels_horn",
+      "file": "reels/storyboards/gabriels_horn.js",
+      "series": "daily-issues",
+      "seriesIndex": 4,
+      "date": "2026-09-29",
+      "topic_ko": "겉넓이는 무한대인데 부피는 유한하다? (가브리엘의 뿔)",
+      "techniques": ["solid-of-revolution-reveal"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
+    },
+    {
+      "id": "point_nine_repeating",
+      "file": "reels/storyboards/point_nine_repeating.js",
+      "series": "daily-issues",
+      "seriesIndex": 5,
+      "date": "2026-09-29",
+      "topic_ko": "0.999...는 사실 1이다 (인터넷 영원한 떡밥)",
+      "techniques": ["comment-debate-reveal"],
+      "trendSource": "viral",
+      "cliffhanger_from": null,
+      "cliffhanger_to": null
     }
   ]
 }
