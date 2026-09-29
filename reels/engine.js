@@ -380,8 +380,8 @@ export function drawHeader(ctx, { breadcrumb, title, subtitle, alpha = 1, titleY
   const maxTextW = SAFE_X1 - SAFE_X0 - 60;
   const titleSize = fitFontSize(ctx, title, 68, maxTextW, 800, 38);
   const subtitleSize = fitFontSize(ctx, subtitle, 32, maxTextW, 600, 22);
-  neonText(ctx, title, WIDTH / 2, titleY, { size: titleSize, color: NEON.white, glow: 14, weight: 800 });
-  neonText(ctx, subtitle, WIDTH / 2, titleY + 92, { size: subtitleSize, color: NEON.cyan, glow: 12, weight: 600 });
+  neonText(ctx, title, SAFE_CX, titleY, { size: titleSize, color: NEON.white, glow: 14, weight: 800 });
+  neonText(ctx, subtitle, SAFE_CX, titleY + 92, { size: subtitleSize, color: NEON.cyan, glow: 12, weight: 600 });
   ctx.restore();
 }
 
