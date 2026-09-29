@@ -571,9 +571,10 @@ def scene_hook(spec, t, dur):
     return img
 
 
-def _fig_box(card_bottom):
-    """문제 카드 아래 도형 영역: 보기(150) + 작은 타이머(160)가 학원명 위에 들어가도록 최대한 크게."""
-    h = max(420, min(660, H - 400 - card_bottom - 20 - 20 - 150 - 30 - 160))
+def _fig_box(card_bottom, spec=None):
+    """문제 카드 아래 도형 영역: 보기(150, 있을 때만) + 작은 타이머(160)가 학원명 위에 들어가도록 최대한 크게."""
+    choices_h = 170 if (spec is None or spec.get("choices")) else 0
+    h = max(420, min(760, H - 400 - card_bottom - 20 - choices_h - 30 - 160))
     return (MARGIN, card_bottom + 20, W - MARGIN, card_bottom + 20 + h)
 
 
@@ -584,7 +585,7 @@ def scene_problem(spec, t, dur):
     bottom = problem_card(d, spec, top, alpha=p, compact="figure" in spec)
     if spec.get("figure"):
         # 선이 하나씩 그려짐 (0.3초 후 시작, 2.2초 동안)
-        bottom = draw_figure(d, spec, _fig_box(bottom),
+        bottom = draw_figure(d, spec, _fig_box(bottom, spec),
                              build=(t - 0.3) / 2.2, t=t)
         if spec.get("choices"):
             draw_choices(d, spec, bottom + 20, alpha=ease_out((t - 2.4) / 0.4))
@@ -605,7 +606,7 @@ def scene_think(spec, t, dur):
     remain = max(0, math.ceil(total - t))
     if spec.get("figure"):
         # 도형 + 봐야 할 도형 테두리에 색깔 선이 돌기, 타이머는 보기 아래에 작게
-        bottom = draw_figure(d, spec, _fig_box(bottom), t=t, trace=True)
+        bottom = draw_figure(d, spec, _fig_box(bottom, spec), t=t, trace=True)
         bottom = draw_choices(d, spec, bottom + 20)
         r = 80
         cx, cy = W / 2, bottom + 30 + r
@@ -646,7 +647,7 @@ def scene_hint(spec, t, dur):
     img, d = base_frame(spec)
     bottom = problem_card(d, spec, 300, compact=True)
     if spec.get("figure"):
-        bottom = draw_figure(d, spec, _fig_box(bottom), t=t,
+        bottom = draw_figure(d, spec, _fig_box(bottom, spec), t=t,
                              highlight_ids=spec["figure"].get("focus", []))
     else:
         bottom = draw_choices(d, spec, bottom + 30)
