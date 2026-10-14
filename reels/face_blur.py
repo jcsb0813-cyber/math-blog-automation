@@ -2,15 +2,17 @@
 """정면에 가까운 얼굴(얼굴의 2/3 이상이 보이는 경우)만 자동 모자이크(표정이 보이는 약한 강도).
 고개를 숙였거나 옆모습이라 정면 얼굴이 검출되지 않으면 그대로 둔다.
 
-사용: python3 scripts/face_blur.py 입력.mp4 출력.mp4 [--sheet 확인용.jpg]
+사용: python3 reels/face_blur.py 입력.mp4 출력.mp4 [--sheet 확인용.jpg]
 필요: opencv-python, numpy, ffmpeg (얼굴 모델 yunet.onnx 는 첫 실행 때 자동 다운로드)
 """
+from __future__ import annotations
 import argparse, json, subprocess, urllib.request
 from pathlib import Path
 import cv2, numpy as np
+from make_reel import find_ffmpeg  # 같은 폴더 (시스템 ffmpeg 또는 imageio-ffmpeg)
 
 MODEL_URL = "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
-MODEL = Path(__file__).resolve().parent.parent / "reels" / "yunet.onnx"
+MODEL = Path(__file__).resolve().parent / "yunet.onnx"
 STEP = 2          # N프레임마다 검출, 사이 프레임은 직전 결과 사용
 MIN_SCORE = 0.5   # 검출 신뢰도 하한 (낮추면 더 많이 가림)
 MAX_YAW = 0.7     # 코가 두 눈 중앙에서 벗어난 정도(눈 간격 대비). 클수록 옆모습까지 가림
@@ -94,7 +96,7 @@ def main():
     det = load_detector(w, h)
     rects = json.loads(Path(a.covers).read_text()) if a.covers else []
     enc = subprocess.Popen(
-        ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}", "-r", str(fps), "-i", "-",
+        [find_ffmpeg(), "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}", "-r", str(fps), "-i", "-",
          "-i", a.src, "-map", "0:v", "-map", "1:a?", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p",
          "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.dst], stdin=subprocess.PIPE)
     boxes, i, hits, samples = [], 0, 0, []

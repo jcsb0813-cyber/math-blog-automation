@@ -16,7 +16,7 @@ where py > nul 2>&1 || set "PY=python"
   exit /b 1
 )
 
-%PY% -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif
+%PY% -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif opencv-python-headless numpy
 start "" "%TARGET%"
 %PY% "%~dp0watch_reels.py" --root "%TARGET%" --create 100
 pause

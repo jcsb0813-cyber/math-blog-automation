@@ -21,10 +21,10 @@ if ! command -v python3 > /dev/null 2>&1; then
   read -r -p "엔터를 누르면 닫힙니다."; exit 1
 fi
 if [ ! -x "$VENV/bin/python" ]; then
-  echo "처음 실행 준비 중입니다 (1~2분, 한 번만)…"
+  echo "처음 실행 준비 중입니다 (자동 대본·얼굴 모자이크용 패키지 포함 2~3분, 한 번만)…"
   python3 -m venv "$VENV" || { read -r -p "준비 실패. 엔터를 누르면 닫힙니다."; exit 1; }
 fi
-"$VENV/bin/python" -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif \
+"$VENV/bin/python" -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif opencv-python-headless numpy \
   || { read -r -p "패키지 설치 실패 (인터넷 연결 확인). 엔터를 누르면 닫힙니다."; exit 1; }
 
 mkdir -p "$TARGET" && open "$TARGET"

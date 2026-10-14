@@ -3,19 +3,22 @@
 9:16 mp4 로 저장한다. (사진 슬라이드쇼 -> 자막 -> 검수용 체크표까지 한 번에)
 
 사용 (학년만 맞으면 되는 경우 - 찍어둔 사진을 계속 소진할 때):
-  python3 scripts/reels_build.py --root ~/릴스/초등 --level 초등   # 안 쓴 사진만 15장씩 묶어 릴스로. 사용 기록은 output/reels/state.json
-  python3 scripts/reels_build.py --root ~/릴스/중등 --level 중등 --dry-run   # 만들기 전에 계획만 확인
-  python3 scripts/reels_build.py --root ~/릴스/고등 --level 고등 --limit 5   # 한 번에 5개만
+  python3 reels/reels_build.py --root ~/릴스/초등 --level 초등   # 안 쓴 사진만 15장씩 묶어 릴스로. 사용 기록은 output/reels/state.json
+  python3 reels/reels_build.py --root ~/릴스/중등 --level 중등 --dry-run   # 만들기 전에 계획만 확인
+  python3 reels/reels_build.py --root ~/릴스/고등 --level 고등 --limit 5   # 한 번에 5개만
 사용 (번호 = 주제 번호로 맞춰 찍은 경우):
-  python3 scripts/reels_build.py --root ~/릴스 --out output/reels            # 1번~12번 전부
-  python3 scripts/reels_build.py --root ~/릴스 --only 1 3 --sec 1.5         # 일부만, 사진당 1.5초
+  python3 reels/reels_build.py --root ~/릴스 --out output/reels            # 1번~12번 전부
+  python3 reels/reels_build.py --root ~/릴스 --only 1 3 --sec 1.5         # 일부만, 사진당 1.5초
   (얼굴 자동 모자이크는 기본 적용: 정면 얼굴만 가리고 숙인/옆모습은 그대로. 끄려면 --no-blur)
-  python3 scripts/reels_build.py --video 1번.mp4 --folder 1 --out output/reels  # 이미 만든 mp4에 자막만
+  python3 reels/reels_build.py --video 1번.mp4 --folder 1 --out output/reels  # 이미 만든 mp4에 자막만
 
 필요: ffmpeg, Pillow, pillow-heif (pip install -r requirements.txt). 한글 폰트는 --font 로 지정 (기본: 맥/리눅스 후보 자동 탐색).
 """
+from __future__ import annotations  # macOS 기본 파이썬(3.9)에서도 동작
 import argparse, json, subprocess, sys, tempfile
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from make_reel import find_ffmpeg  # 시스템 ffmpeg 또는 imageio-ffmpeg
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 try:  # 아이폰 HEIC 사진 지원 (pip install pillow-heif)
     import pillow_heif; pillow_heif.register_heif_opener()
@@ -30,13 +33,13 @@ SPACE = 0.50            # 띄어쓰기 폭
 CAPTION_CENTER_Y = 0.284  # 기존 영상 자막의 세로 중심(화면 높이 대비)
 IMG_EXT = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
 FONT_CANDIDATES = [
-    str(Path(__file__).resolve().parent.parent / "reels" / "fonts" / "CuteFont-Regular.ttf"),
+    str(Path(__file__).resolve().parent / "fonts" / "CuteFont-Regular.ttf"),
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
     "/Library/Fonts/NanumGothicBold.ttf",
     "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
     "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
 ]
-TOPIC_DIR = Path(__file__).resolve().parent.parent / "reels"  # topics.json + topics_초등/중등/고등.json 모두 읽음
+TOPIC_DIR = Path(__file__).resolve().parent  # topics.json + topics_초등/중등/고등.json 모두 읽음
 
 
 def find_font(arg):
@@ -129,14 +132,16 @@ def slideshow(photos, sec, out, min_total=0.0):
             im.crop((x, y, x + W, y + H)).save(f, quality=92)
             frames.append(f)
         lst.write_text("".join(f"file '{f}'\nduration {sec}\n" for f in frames) + f"file '{frames[-1]}'\n")
-        subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
+        subprocess.run([find_ffmpeg(), "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
                         "-vf", "fps=30,format=yuv420p", "-c:v", "libx264", "-crf", "18", str(out)], check=True)
 
 
 def duration(video):
-    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(video)],
-                       capture_output=True, text=True, check=True)
-    return float(r.stdout)
+    import cv2  # ffprobe 가 없는 환경(imageio-ffmpeg 만 설치)에서도 길이를 구하려고 OpenCV 사용
+    cap = cv2.VideoCapture(str(video))
+    n, fps = cap.get(cv2.CAP_PROP_FRAME_COUNT), cap.get(cv2.CAP_PROP_FPS) or 30
+    cap.release()
+    return n / fps
 
 
 def timeline(topic, hook_sec, card_sec):
@@ -173,9 +178,35 @@ def add_captions(video, tl, font_path, out):
             inputs += ["-i", str(png)]
             chain.append(f"[{last}][{i+1}:v]overlay=x=(W-w)/2:y=H*{CAPTION_CENTER_Y}-h/2:enable='between(t,{a:.2f},{b:.2f})'[v{i}]")
             last = f"v{i}"
-        subprocess.run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(chain),
+        subprocess.run([find_ffmpeg(), "-y", "-v", "error", *inputs, "-filter_complex", ";".join(chain),
                         "-map", f"[{last}]", "-map", "0:a?", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
                         "-c:a", "copy", "-movflags", "+faststart", str(out)], check=True)
+
+
+def load_topics():
+    topics = {}
+    for tf in sorted(TOPIC_DIR.glob("topics*.json")):
+        for t in json.loads(tf.read_text(encoding="utf-8"))["topics"]:
+            assert t["folder"] not in topics, f"주제 번호 중복: {t['folder']}"
+            topics[t["folder"]] = t
+    return topics
+
+
+def finish_video(raw, final, topic, font, work_dir, blur=True, hook_sec=2.4, card_sec=2.0):
+    """자막 없는 영상 raw 에 (정면 얼굴 약한 모자이크 → 주제 자막)을 입혀 final 로 저장. 감시 프로그램에서도 사용."""
+    work_dir = Path(work_dir); work_dir.mkdir(parents=True, exist_ok=True)
+    tl, need = timeline(topic, hook_sec, card_sec)
+    src = Path(raw)
+    if duration(src) < need - 0.1:
+        print(f"[주의] 영상 {duration(src):.1f}초 < 자막 {need:.1f}초: 뒤쪽 자막이 잘립니다")
+    if blur:
+        blurred, covers = work_dir / "blur.mp4", work_dir / "covers.json"
+        covers.write_text(json.dumps(caption_rects(tl, font)))
+        subprocess.run([sys.executable, str(Path(__file__).with_name("face_blur.py")), str(src), str(blurred),
+                        "--covers", str(covers)], check=True)
+        src = blurred
+    add_captions(src, tl, font, Path(final))
+    return need
 
 
 def main():
@@ -198,11 +229,7 @@ def main():
     ap.add_argument("--no-blur", action="store_true", help="얼굴 자동 모자이크 끄기")
     a = ap.parse_args()
     font = find_font(a.font)
-    topics = {}
-    for tf in sorted(TOPIC_DIR.glob("topics*.json")):
-        for t in json.loads(tf.read_text(encoding="utf-8"))["topics"]:
-            assert t["folder"] not in topics, f"주제 번호 중복: {t['folder']}"
-            topics[t["folder"]] = t
+    topics = load_topics()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
 
     state_f = out / "state.json"  # 사용한 사진/주제 기록: 같은 --out 을 계속 써야 "안 쓴 것만" 이어서 만든다

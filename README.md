@@ -40,17 +40,17 @@
 
 찍어둔 사진을 계속 소진할 때 (학년 폴더에 사진만 계속 넣으면 됨, 주제는 자동 배정):
 ```
-python3 scripts/reels_build.py --root ~/릴스/초등 --level 초등 --dry-run   # 계획만 확인
-python3 scripts/reels_build.py --root ~/릴스/초등 --level 초등             # 안 쓴 사진만 15장씩 묶어 릴스 제작
-python3 scripts/reels_build.py --root ~/릴스/중등 --level 중등 --limit 5   # 한 번에 5개만
+python3 reels/reels_build.py --root ~/릴스/초등 --level 초등 --dry-run   # 계획만 확인
+python3 reels/reels_build.py --root ~/릴스/초등 --level 초등             # 안 쓴 사진만 15장씩 묶어 릴스 제작
+python3 reels/reels_build.py --root ~/릴스/중등 --level 중등 --limit 5   # 한 번에 5개만
 ```
 - 사용한 사진은 `output/reels/state.json`에 기록 → 다시 실행해도 안 쓴 사진만 처리 (`--out`을 바꾸지 말 것)
 - 폴더 구분은 상관없음. 낱장/폴더 모두 안 쓴 사진을 15장씩 묶고, 남는 8장 미만은 다음 실행까지 대기
-- 주제는 학년별로 차례로 쓰고 다 쓰면 처음부터 반복 → 오래 쓰려면 `reels/topics.json`에 주제 추가
+- 주제는 학년별로 차례로 쓰고 다 쓰면 처음부터 반복 → 오래 쓰려면 `reels/topics*.json`에 주제 추가
 주제에 맞춰 찍은 사진이면 `--root ~/릴스 --only 3`(번호 = 주제 번호) 또는 `--video 1번.mp4 --folder 1`.
 
 - 사진 1.2초씩 → 훅(공감 질문 2줄, 2.4초) → 정보 카드 6장 + 제품 연결 1장(2줄, 카드당 2초) → 저장·구독 유도(노란 박스)
-- 자막 문구는 `reels/topics.json` (주제 12개: 초등 4 / 중등 4 / 고등 4). 제품·양식 이름은 실제 이름으로 교체
+- 자막 문구는 `reels/topics*.json` (주제 12개: 초등 4 / 중등 4 / 고등 4). 제품·양식 이름은 실제 이름으로 교체
 - 자막 스타일: 기존 릴스와 같은 흰 박스 + 고정폭 손글씨체(`reels/fonts/CuteFont-Regular.ttf`, 무료)
 - 얼굴 모자이크: 정면 얼굴(2/3 이상)만, 표정이 보이는 약한 강도. 숙인/옆모습은 제외.
   자막이 얼굴 핵심부(눈·코·입)의 1/3 이상 가리는 구간은 모자이크 생략
