@@ -46,8 +46,36 @@ def find_font(arg):
     sys.exit("한글 폰트를 못 찾았습니다. --font 로 .ttf/.ttc 경로를 지정하세요.")
 
 
+# 폰트에 없는 글자는 대체 (Cute Font 에는 ①Ⅰ→− 등이 없음). 화살표는 직접 그린다.
+SUBS = {"①": "1)", "②": "2)", "③": "3)", "④": "4)", "Ⅰ": "I", "Ⅱ": "II", "−": "-"}
+ARROWS = "→↔"
+
+
+def _norm(text):
+    return "".join(SUBS.get(ch, ch) for ch in text)
+
+
+def _cw(ch):
+    """글자별 칸 폭(글자크기 대비): 한글은 고정폭, 숫자·영문·기호는 좁게, 화살표는 넓게."""
+    if ch == " ":
+        return SPACE
+    if "가" <= ch <= "힣":
+        return PITCH
+    if ch in ARROWS:
+        return 1.0
+    return 0.56
+
+
 def _cells(text, size):
-    return [size * (SPACE if ch == " " else PITCH) for ch in text]
+    return [size * _cw(ch) for ch in text]
+
+
+def _arrow(d, cx, cy, size, both=False):
+    L, h, t = size * 0.36, size * 0.16, max(3, int(size * 0.07))
+    d.line((cx - L, cy, cx + L, cy), fill=(0, 0, 0, 255), width=t)
+    d.polygon([(cx + L + h * 0.6, cy), (cx + L - h, cy - h), (cx + L - h, cy + h)], fill=(0, 0, 0, 255))
+    if both:
+        d.polygon([(cx - L - h * 0.6, cy), (cx - L + h, cy - h), (cx - L + h, cy + h)], fill=(0, 0, 0, 255))
 
 
 def caption_png(lines, font_path, path, size=78, last=False):
@@ -55,6 +83,7 @@ def caption_png(lines, font_path, path, size=78, last=False):
     lines 가 여러 줄이면 박스를 위아래로 쌓는다. 너무 길면 글자 크기를 줄여 화면 안에 맞춘다."""
     if isinstance(lines, str):
         lines = [lines]
+    lines = [_norm(t) for t in lines]
     pad_x, pad_y, gap = 48, 26, 14
     boxes = []
     for text in lines:
@@ -71,7 +100,9 @@ def caption_png(lines, font_path, path, size=78, last=False):
         d.rectangle((x, y, x + bw, y + bh), fill=YELLOW if last else (255, 255, 255, 255))
         cx = x + pad_x
         for ch, cw in zip(text, _cells(text, sz)):
-            if ch != " ":
+            if ch in ARROWS:
+                _arrow(d, cx + cw / 2, y + bh / 2, sz, both=(ch == "↔"))
+            elif ch != " ":
                 d.text((cx + cw / 2, y + bh / 2), ch, font=font, fill=(0, 0, 0, 255), anchor="mm",
                        stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
             cx += cw
