@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""릴스 자동 제작: 폴더의 사진을 1.2초씩 이어붙이고, 주제 은행(reels/topics.json)의 자막(훅 2.4초 -> 내용 2줄씩 2초 -> 제품 연결 -> 저장/구독유도)을 입혀
+"""릴스 자동 제작: 폴더의 사진을 1.2초씩 이어붙이고, 주제 은행(reels/topics*.json)의 자막(훅 2.4초 -> 내용 2줄씩 2초 -> 제품 연결 -> 저장/구독유도)을 입혀
 9:16 mp4 로 저장한다. (사진 슬라이드쇼 -> 자막 -> 검수용 체크표까지 한 번에)
 
 사용 (학년만 맞으면 되는 경우 - 찍어둔 사진을 계속 소진할 때):
@@ -36,7 +36,7 @@ FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
     "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
 ]
-TOPICS = Path(__file__).resolve().parent.parent / "reels" / "topics.json"
+TOPIC_DIR = Path(__file__).resolve().parent.parent / "reels"  # topics.json + topics_초등/중등/고등.json 모두 읽음
 
 
 def find_font(arg):
@@ -167,7 +167,11 @@ def main():
     ap.add_argument("--no-blur", action="store_true", help="얼굴 자동 모자이크 끄기")
     a = ap.parse_args()
     font = find_font(a.font)
-    topics = {t["folder"]: t for t in json.loads(TOPICS.read_text(encoding="utf-8"))["topics"]}
+    topics = {}
+    for tf in sorted(TOPIC_DIR.glob("topics*.json")):
+        for t in json.loads(tf.read_text(encoding="utf-8"))["topics"]:
+            assert t["folder"] not in topics, f"주제 번호 중복: {t['folder']}"
+            topics[t["folder"]] = t
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
 
     state_f = out / "state.json"  # 사용한 사진/주제 기록: 같은 --out 을 계속 써야 "안 쓴 것만" 이어서 만든다
