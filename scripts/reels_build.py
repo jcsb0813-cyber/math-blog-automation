@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""릴스 자동 제작: 폴더의 사진을 1초씩 이어붙이고, 주제 은행(reels/topics.json)의 자막을 장면마다 입혀
+"""릴스 자동 제작: 폴더의 사진을 1.2초씩 이어붙이고, 주제 은행(reels/topics.json)의 자막(제목 1.2초 -> 내용 2줄씩 2초 -> 구독유도)을 입혀
 9:16 mp4 로 저장한다. (사진 슬라이드쇼 -> 자막 -> 검수용 체크표까지 한 번에)
 
 사용:
@@ -36,18 +36,32 @@ def find_font(arg):
     sys.exit("한글 폰트를 못 찾았습니다. --font 로 .ttf/.ttc 경로를 지정하세요.")
 
 
-def caption_png(text, font_path, path, size=76, last=False):
-    """기존 릴스 자막과 동일한 모양: 모서리 각진 불투명 흰 박스 + 검정 손글씨체, 가운데 정렬."""
-    font = ImageFont.truetype(font_path, size)
-    pad_x, pad_y = 48, 26
+def caption_png(lines, font_path, path, size=76, last=False):
+    """기존 릴스 자막과 동일한 모양: 모서리 각진 불투명 흰 박스 + 검정 손글씨체, 가운데 정렬.
+    lines 가 여러 줄이면 박스를 위아래로 쌓는다. 너무 길면 글자 크기를 줄여 화면 안에 맞춘다."""
+    if isinstance(lines, str):
+        lines = [lines]
+    pad_x, pad_y, gap = 48, 26, 14
     tmp = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    l, t, r, b = tmp.textbbox((0, 0), text, font=font, stroke_width=STROKE)
-    w, h = min(r - l + pad_x * 2, W - 60), b - t + pad_y * 2
-    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    boxes = []
+    for text in lines:
+        sz = size
+        while True:
+            font = ImageFont.truetype(font_path, sz)
+            l, t, r, b = tmp.textbbox((0, 0), text, font=font, stroke_width=STROKE)
+            if r - l + pad_x * 2 <= W - 60 or sz <= 40:
+                break
+            sz -= 2
+        boxes.append((text, font, l, t, r - l + pad_x * 2, b - t + pad_y * 2, r - l))
+    img = Image.new("RGBA", (max(bx[4] for bx in boxes), sum(bx[5] for bx in boxes) + gap * (len(boxes) - 1)), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rectangle((0, 0, w, h), fill=YELLOW if last else (255, 255, 255, 255))
-    d.text(((w - (r - l)) // 2 - l, pad_y - t), text, font=font, fill=(0, 0, 0, 255),
-           stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
+    y = 0
+    for text, font, l, t, bw, bh, tw in boxes:
+        x = (img.width - bw) // 2
+        d.rectangle((x, y, x + bw, y + bh), fill=YELLOW if last else (255, 255, 255, 255))
+        d.text((x + (bw - tw) // 2 - l, y + pad_y - t), text, font=font, fill=(0, 0, 0, 255),
+               stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
+        y += bh + gap
     img.save(path)
 
 
@@ -55,12 +69,13 @@ def photos_in(folder):
     return sorted(p for p in Path(folder).iterdir() if p.suffix.lower() in IMG_EXT and not p.name.startswith("."))
 
 
-def slideshow(photos, sec, out):
+def slideshow(photos, sec, out, min_total=0.0):
     """사진 -> 1080x1920 중앙 크롭, 장당 sec초."""
     with tempfile.TemporaryDirectory() as td:
         lst = Path(td) / "list.txt"
         frames = []
-        for i, p in enumerate(photos):
+        need = max(len(photos), int(-(-min_total // sec)))  # 자막이 더 길면 사진을 순서대로 반복
+        for i, p in enumerate(photos[i % len(photos)] for i in range(need)):
             im = Image.open(p).convert("RGB")
             s = max(W / im.width, H / im.height)
             im = im.resize((round(im.width * s), round(im.height * s)))
@@ -79,17 +94,25 @@ def duration(video):
     return float(r.stdout)
 
 
-def add_captions(video, lines, font_path, out):
-    """lines 를 영상 길이에 균등 배분(장면마다 1줄)해서 입힌다. 짧은 영상이면 줄당 시간이 자동으로 줄어든다."""
+def timeline(topic, title_sec, card_sec):
+    """[(줄 목록, 시작, 끝, 구독유도 여부)] : 제목(1줄) -> 내용 카드(2줄씩) -> CTA(2줄)"""
+    items = [([topic["hook"]], False, title_sec)]
+    items += [(c, False, card_sec) for c in topic["cards"]]
+    items += [(topic["cta"], True, card_sec)]
+    t, out = 0.0, []
+    for lines, last, dur in items:
+        out.append((lines, t, t + dur, last)); t += dur
+    return out, t
+
+
+def add_captions(video, tl, font_path, out):
     total = duration(video)
-    per = total / len(lines)
     with tempfile.TemporaryDirectory() as td:
         inputs, chain, last = ["-i", str(video)], [], "0:v"
-        for i, line in enumerate(lines):
+        for i, (lines, a, b, is_cta) in enumerate(tl):
             png = Path(td) / f"c{i}.png"
-            caption_png(line, font_path, png, last=(i == len(lines) - 1))
+            caption_png(lines, font_path, png, last=is_cta)
             inputs += ["-i", str(png)]
-            a, b = i * per, (i + 1) * per
             chain.append(f"[{last}][{i+1}:v]overlay=x=(W-w)/2:y=H*{CAPTION_CENTER_Y}-h/2:enable='between(t,{a:.2f},{b:.2f})'[v{i}]")
             last = f"v{i}"
         subprocess.run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(chain),
@@ -103,7 +126,8 @@ def main():
     ap.add_argument("--video", help="이미 만든 mp4 (자막만 입힐 때)")
     ap.add_argument("--folder", type=int, help="--video 와 함께 쓸 주제 번호")
     ap.add_argument("--only", type=int, nargs="*")
-    ap.add_argument("--sec", type=float, default=1.0, help="사진당 노출 시간(초)")
+    ap.add_argument("--sec", type=float, default=1.2, help="사진당 노출 시간(초). 제목 자막도 이 시간만큼 보임")
+    ap.add_argument("--card-sec", type=float, default=2.0, help="내용 카드(2줄) 1장당 노출 시간(초)")
     ap.add_argument("--out", default="output/reels")
     ap.add_argument("--font")
     ap.add_argument("--no-blur", action="store_true", help="얼굴 자동 모자이크 끄기")
@@ -126,16 +150,19 @@ def main():
     report = ["# 릴스 검수표 (원장님 확인 후 업로드)\n"]
     for n, src in jobs:
         t = topics[n]
+        tl, need = timeline(t, a.sec, a.card_sec)
         raw = src
         if src.is_dir():
             raw = out / f"{n}번_raw.mp4"
-            slideshow(photos_in(src), a.sec, raw)
+            slideshow(photos_in(src), a.sec, raw, min_total=need)
+        elif duration(raw) < need - 0.1:
+            print(f"[주의] {raw.name} 길이 {duration(raw):.1f}초 < 자막 {need:.1f}초: 뒤쪽 자막이 잘립니다")
         if not a.no_blur:  # 자막을 입히기 전에 얼굴부터 가린다 (자막이 모자이크에 깨지지 않도록)
             blurred = out / f"{n}번_blur.mp4"
             subprocess.run([sys.executable, str(Path(__file__).with_name("face_blur.py")), str(raw), str(blurred)], check=True)
             raw = blurred
         final = out / f"{n}번_{t['level']}_{t['title']}.mp4"
-        add_captions(raw, t["lines"], font, final)
+        add_captions(raw, tl, font, final)
         print("완료:", final)
         report.append(f"## {n}번 · {t['level']} · {t['title']}\n- 파일: `{final.name}`")
         report += [f"- [ ] 확인필요: {v}" for v in t["verify"]]

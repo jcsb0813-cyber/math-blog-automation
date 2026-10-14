@@ -42,6 +42,6 @@ python3 scripts/reels_build.py --root ~/릴스            # 1번~12번 폴더 �
 python3 scripts/reels_build.py --root ~/릴스 --only 3   # 3번만
 python3 scripts/reels_build.py --video 1번.mp4 --folder 1   # 이미 만든 mp4에 자막만
 ```
-- 자막(학부모 궁금 질문 10줄 + 마지막 줄 구독유도)은 `reels/topics.json` 에서 번호별로 관리
+- 자막은 `reels/topics.json` 에서 번호별로 관리: 제목(1.2초) -> 내용 2줄 카드 7장(카드당 2초) -> 저장/구독 유도(노란 박스). 사진은 1.2초씩
 - 결과: `output/reels/*.mp4`(9:16) + `output/reels/review.md`(원장님 검수 체크표)
 - 업로드는 검수 후 원장님이 직접 (인스타 예약게시 사용 권장)
