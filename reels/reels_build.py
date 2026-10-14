@@ -31,6 +31,8 @@ STROKE = 1              # 글씨 굵기 보정 (기존 자막 두께에 맞춤)
 PITCH = 0.80            # 글자 간격: 기존 자막처럼 글자마다 같은 폭의 칸(고정폭)에 배치 (글자크기 대비)
 SPACE = 0.50            # 띄어쓰기 폭
 CAPTION_CENTER_Y = 0.284  # 기존 영상 자막의 세로 중심(화면 높이 대비)
+NUM_FONT = Path(__file__).resolve().parent / "fonts" / "NanumBarunGothicBold.ttf"  # 숫자·영문·기호용 (손글씨체의 3이 ㅋ처럼 읽혀서)
+NUM_SCALE = 0.84
 IMG_EXT = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
 FONT_CANDIDATES = [
     str(Path(__file__).resolve().parent / "fonts" / "CuteFont-Regular.ttf"),
@@ -106,8 +108,12 @@ def caption_png(lines, font_path, path, size=78, last=False):
             if ch in ARROWS:
                 _arrow(d, cx + cw / 2, y + bh / 2, sz, both=(ch == "↔"))
             elif ch != " ":
-                d.text((cx + cw / 2, y + bh / 2), ch, font=font, fill=(0, 0, 0, 255), anchor="mm",
-                       stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
+                if "가" <= ch <= "힣" or not NUM_FONT.exists():
+                    d.text((cx + cw / 2, y + bh / 2), ch, font=font, fill=(0, 0, 0, 255), anchor="mm",
+                           stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
+                else:  # 숫자·영문·기호는 또렷한 고딕으로
+                    nf = ImageFont.truetype(str(NUM_FONT), int(sz * NUM_SCALE))
+                    d.text((cx + cw / 2, y + bh / 2), ch, font=nf, fill=(0, 0, 0, 255), anchor="mm")
             cx += cw
         y += bh + gap
     img.save(path)
@@ -265,7 +271,7 @@ def main():
             t = pool[(n0 + k) % len(pool)]
             jobs.append((t, name, chunk, (n0 + k) >= len(pool)))
         left = len(pool) - n0 - len(pending)
-        if left <= 3:
+        if left <= 3 and not a.topic:
             print(f"[알림] {a.level} 새 주제가 {max(left, 0)}개 남았습니다. 이후에는 앞의 주제가 반복됩니다 → Claude에게 '{a.level} 주제 20개 추가'를 요청하세요.")
         print(f"[{a.level}] 새로 만들 릴스 {len(pending)}개 / 사진이 모자라 다음을 기다리는 사진 {waiting}장 / 이미 사용한 사진 {len(state['photos'])}장")
         if a.limit:
