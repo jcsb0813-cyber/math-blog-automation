@@ -27,6 +27,7 @@
 - `docs/SETUP_CHECKLIST.md` — 실제로 돌리기 전에 준비해야 할 계정/키 목록 (지금 여기부터 보세요)
 - `config/photo_manifest.example.json` — 동의받은 사진을 태깅해서 관리하는 형식
 - `scripts/topic_research.py` — 네이버 데이터랩/검색 API로 학년별 트렌드 주제 후보 추출
+- `reels/` — 사진 폴더로 인스타 릴스(9:16) 영상 자동 생성 (아래 참고)
 - `.claude/skills/blog-auto/SKILL.md` — Claude Code가 이 전체 파이프라인을 실행할 때 따르는 절차
 - `output/` — 회차별 결과물 (본문 초안, 카드뉴스, 검수 리포트)이 쌓이는 곳
 
@@ -54,3 +55,9 @@ python3 scripts/reels_build.py --root ~/릴스/중등 --level 중등 --limit 5  
 - 얼굴 모자이크: 정면 얼굴(2/3 이상)만, 표정이 보이는 약한 강도. 숙인/옆모습은 제외.
   자막이 얼굴 핵심부(눈·코·입)의 1/3 이상 가리는 구간은 모자이크 생략
 - 결과: `output/reels/*.mp4` + `output/reels/review.md`(원장님 검수 체크표). 업로드는 검수 후 직접
+
+## 인스타 릴스 만들기
+
+사진 폴더를 넣으면 9:16 릴스 영상(사진당 1초)을 만들어 줍니다. 윈도우에서는 `reels/릴스만들기.bat`(한 번에 만들기) 또는
+`reels/릴스자동감시.bat`(사진이 들어오면 자동으로 만들기) 더블클릭. 맥은 같은 이름의 `.command` 파일.
+자세한 사용법은 [`reels/README.md`](reels/README.md)를 보세요.

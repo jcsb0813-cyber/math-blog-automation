@@ -1,0 +1,35 @@
+#!/bin/bash
+# 맥용: 더블클릭하면 iCloud Drive/릴스 (없으면 바탕화면/릴스) 안의 1번, 2번 … 폴더를 한 번에 영상으로 만듭니다.
+# 결과: 릴스/완성영상/1번.mp4, 2번.mp4 …
+cd "$(dirname "$0")" || exit 1
+# 문서/데스크탑 폴더는 맥이 보호하는 폴더라, 터미널에 권한이 없으면 여기서 막힘 → 알아보기 쉽게 안내
+if ! ls . > /dev/null 2>&1; then
+  echo "터미널에 이 폴더 접근 권한이 없습니다."
+  echo "시스템 설정 → 개인정보 보호 및 보안 → 파일 및 폴더 → 터미널 → '문서 폴더'(와 iCloud Drive)를 켜주세요."
+  echo "(목록에 터미널이 없으면: 전체 디스크 접근 권한 → + → 응용 프로그램/유틸리티/터미널)"
+  read -r -p "엔터를 누르면 닫힙니다."; exit 1
+fi
+# iCloud Drive가 켜져 있으면 iCloud Drive/릴스 (아이패드 파일 앱에서도 보임), 아니면 바탕화면/릴스
+ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+if [ -d "$ICLOUD" ]; then DEFAULT="$ICLOUD/릴스"; else DEFAULT="$HOME/Desktop/릴스"; fi
+TARGET="${1:-$DEFAULT}"
+VENV="$HOME/.reels-venv"
+
+if [ ! -d "$TARGET" ]; then
+  echo "폴더를 찾을 수 없습니다: $TARGET"
+  echo "iCloud Drive(또는 바탕화면)에 '릴스' 폴더를 만들고 그 안에 1번, 2번 … 폴더로 사진을 넣어주세요."
+  read -r -p "엔터를 누르면 닫힙니다."; exit 1
+fi
+if ! command -v python3 > /dev/null 2>&1; then
+  echo "파이썬이 없습니다. https://www.python.org/downloads/ 에서 macOS용을 설치한 뒤 다시 실행하세요."
+  read -r -p "엔터를 누르면 닫힙니다."; exit 1
+fi
+if [ ! -x "$VENV/bin/python" ]; then
+  echo "처음 실행 준비 중입니다 (1~2분, 한 번만)…"
+  python3 -m venv "$VENV" || { read -r -p "준비 실패. 엔터를 누르면 닫힙니다."; exit 1; }
+fi
+"$VENV/bin/python" -m pip install --quiet --disable-pip-version-check pillow imageio-ffmpeg pillow-heif \
+  || { read -r -p "패키지 설치 실패 (인터넷 연결 확인). 엔터를 누르면 닫힙니다."; exit 1; }
+
+"$VENV/bin/python" make_reel.py --photos "$TARGET" --fill --first-only --position third --font-size 80 --first-seconds 1 --seconds 0.7 && open "$TARGET/완성영상"
+read -r -p "끝났습니다. 엔터를 누르면 닫힙니다."
