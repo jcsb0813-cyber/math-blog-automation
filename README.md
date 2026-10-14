@@ -35,13 +35,19 @@
 `docs/SETUP_CHECKLIST.md`를 확인하세요. GitHub 계정, 네이버 오픈API 키, Canva 브랜드
 템플릿, 사진 매니페스트 정리가 끝나야 실제로 돌려볼 수 있습니다.
 
-## 릴스 자동 제작 (사진 → 자막 → 검수표)
+## 릴스 자동 제작 (사진 → 얼굴 모자이크 → 자막 → 검수표)
 
+찍어둔 사진을 빨리 소진할 때 (학년만 맞으면 됨, 주제는 자동 배정):
 ```
-python3 scripts/reels_build.py --root ~/릴스            # 1번~12번 폴더 전부
-python3 scripts/reels_build.py --root ~/릴스 --only 3   # 3번만
-python3 scripts/reels_build.py --video 1번.mp4 --folder 1   # 이미 만든 mp4에 자막만
+python3 scripts/reels_build.py --root ~/릴스/초등 --level 초등   # 폴더마다 안 쓴 초등 주제를 차례로
+python3 scripts/reels_build.py --root ~/릴스/중등 --level 중등
+python3 scripts/reels_build.py --root ~/릴스/고등 --level 고등
 ```
-- 자막은 `reels/topics.json` 에서 번호별로 관리: 제목(1.2초) -> 내용 2줄 카드 7장(카드당 2초) -> 저장/구독 유도(노란 박스). 사진은 1.2초씩
-- 결과: `output/reels/*.mp4`(9:16) + `output/reels/review.md`(원장님 검수 체크표)
-- 업로드는 검수 후 원장님이 직접 (인스타 예약게시 사용 권장)
+주제에 맞춰 찍은 사진이면 `--root ~/릴스 --only 3`(번호 = 주제 번호) 또는 `--video 1번.mp4 --folder 1`.
+
+- 사진 1.2초씩 → 훅(공감 질문 2줄, 2.4초) → 정보 카드 6장 + 제품 연결 1장(2줄, 카드당 2초) → 저장·구독 유도(노란 박스)
+- 자막 문구는 `reels/topics.json` (주제 12개: 초등 4 / 중등 4 / 고등 4). 제품·양식 이름은 실제 이름으로 교체
+- 자막 스타일: 기존 릴스와 같은 흰 박스 + 고정폭 손글씨체(`reels/fonts/CuteFont-Regular.ttf`, 무료)
+- 얼굴 모자이크: 정면 얼굴(2/3 이상)만, 표정이 보이는 약한 강도. 숙인/옆모습은 제외.
+  자막이 얼굴 핵심부(눈·코·입)의 1/3 이상 가리는 구간은 모자이크 생략
+- 결과: `output/reels/*.mp4` + `output/reels/review.md`(원장님 검수 체크표). 업로드는 검수 후 직접
