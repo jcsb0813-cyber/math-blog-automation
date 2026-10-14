@@ -34,3 +34,14 @@
 
 `docs/SETUP_CHECKLIST.md`를 확인하세요. GitHub 계정, 네이버 오픈API 키, Canva 브랜드
 템플릿, 사진 매니페스트 정리가 끝나야 실제로 돌려볼 수 있습니다.
+
+## 릴스 자동 제작 (사진 → 자막 → 검수표)
+
+```
+python3 scripts/reels_build.py --root ~/릴스            # 1번~12번 폴더 전부
+python3 scripts/reels_build.py --root ~/릴스 --only 3   # 3번만
+python3 scripts/reels_build.py --video 1번.mp4 --folder 1   # 이미 만든 mp4에 자막만
+```
+- 자막(학부모 궁금 질문 10줄 + 마지막 줄 구독유도)은 `reels/topics.json` 에서 번호별로 관리
+- 결과: `output/reels/*.mp4`(9:16) + `output/reels/review.md`(원장님 검수 체크표)
+- 업로드는 검수 후 원장님이 직접 (인스타 예약게시 사용 권장)
