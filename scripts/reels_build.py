@@ -5,6 +5,7 @@
 사용:
   python3 scripts/reels_build.py --root ~/릴스 --out output/reels            # 1번~12번 전부
   python3 scripts/reels_build.py --root ~/릴스 --only 1 3 --sec 1.5         # 일부만, 사진당 1.5초
+  (얼굴 자동 모자이크는 기본 적용: 정면 얼굴만 가리고 숙인/옆모습은 그대로. 끄려면 --no-blur)
   python3 scripts/reels_build.py --video 1번.mp4 --folder 1 --out output/reels  # 이미 만든 mp4에 자막만
 
 필요: ffmpeg, Pillow (pip install pillow). 한글 폰트는 --font 로 지정 (기본: 맥/리눅스 후보 자동 탐색).
@@ -14,9 +15,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1080, 1920
-YELLOW = (255, 214, 0)  # 학원 메인 컬러
+YELLOW = (255, 214, 0)  # 학원 메인 컬러 (마지막 구독유도 줄만 사용)
+STROKE = 0              # 글씨 굵기 보정(필요시 1)
+CAPTION_CENTER_Y = 0.284  # 기존 영상 자막의 세로 중심(화면 높이 대비)
 IMG_EXT = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
 FONT_CANDIDATES = [
+    str(Path(__file__).resolve().parent.parent / "reels" / "fonts" / "GamjaFlower-Regular.ttf"),
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
     "/Library/Fonts/NanumGothicBold.ttf",
     "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
@@ -32,16 +36,18 @@ def find_font(arg):
     sys.exit("한글 폰트를 못 찾았습니다. --font 로 .ttf/.ttc 경로를 지정하세요.")
 
 
-def caption_png(text, font_path, path, size=64, last=False):
+def caption_png(text, font_path, path, size=76, last=False):
+    """기존 릴스 자막과 동일한 모양: 모서리 각진 불투명 흰 박스 + 검정 손글씨체, 가운데 정렬."""
     font = ImageFont.truetype(font_path, size)
-    pad_x, pad_y = 44, 28
+    pad_x, pad_y = 48, 26
     tmp = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    l, t, r, b = tmp.textbbox((0, 0), text, font=font)
-    w, h = min(r - l + pad_x * 2, W - 80), b - t + pad_y * 2
+    l, t, r, b = tmp.textbbox((0, 0), text, font=font, stroke_width=STROKE)
+    w, h = min(r - l + pad_x * 2, W - 60), b - t + pad_y * 2
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle((0, 0, w - 1, h - 1), 14, fill=YELLOW if last else (255, 255, 255, 235))
-    d.text(((w - (r - l)) // 2 - l, pad_y - t), text, font=font, fill=(0, 0, 0, 255))
+    d.rectangle((0, 0, w, h), fill=YELLOW if last else (255, 255, 255, 255))
+    d.text(((w - (r - l)) // 2 - l, pad_y - t), text, font=font, fill=(0, 0, 0, 255),
+           stroke_width=STROKE, stroke_fill=(0, 0, 0, 255))
     img.save(path)
 
 
@@ -73,7 +79,7 @@ def duration(video):
     return float(r.stdout)
 
 
-def add_captions(video, lines, font_path, out, y_ratio=0.12):
+def add_captions(video, lines, font_path, out):
     """lines 를 영상 길이에 균등 배분(장면마다 1줄)해서 입힌다. 짧은 영상이면 줄당 시간이 자동으로 줄어든다."""
     total = duration(video)
     per = total / len(lines)
@@ -84,7 +90,7 @@ def add_captions(video, lines, font_path, out, y_ratio=0.12):
             caption_png(line, font_path, png, last=(i == len(lines) - 1))
             inputs += ["-i", str(png)]
             a, b = i * per, (i + 1) * per
-            chain.append(f"[{last}][{i+1}:v]overlay=x=(W-w)/2:y=H*{y_ratio}:enable='between(t,{a:.2f},{b:.2f})'[v{i}]")
+            chain.append(f"[{last}][{i+1}:v]overlay=x=(W-w)/2:y=H*{CAPTION_CENTER_Y}-h/2:enable='between(t,{a:.2f},{b:.2f})'[v{i}]")
             last = f"v{i}"
         subprocess.run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(chain),
                         "-map", f"[{last}]", "-map", "0:a?", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
@@ -100,6 +106,7 @@ def main():
     ap.add_argument("--sec", type=float, default=1.0, help="사진당 노출 시간(초)")
     ap.add_argument("--out", default="output/reels")
     ap.add_argument("--font")
+    ap.add_argument("--no-blur", action="store_true", help="얼굴 자동 모자이크 끄기")
     a = ap.parse_args()
     font = find_font(a.font)
     topics = {t["folder"]: t for t in json.loads(TOPICS.read_text(encoding="utf-8"))["topics"]}
@@ -123,6 +130,10 @@ def main():
         if src.is_dir():
             raw = out / f"{n}번_raw.mp4"
             slideshow(photos_in(src), a.sec, raw)
+        if not a.no_blur:  # 자막을 입히기 전에 얼굴부터 가린다 (자막이 모자이크에 깨지지 않도록)
+            blurred = out / f"{n}번_blur.mp4"
+            subprocess.run([sys.executable, str(Path(__file__).with_name("face_blur.py")), str(raw), str(blurred)], check=True)
+            raw = blurred
         final = out / f"{n}번_{t['level']}_{t['title']}.mp4"
         add_captions(raw, t["lines"], font, final)
         print("완료:", final)
