@@ -18,7 +18,7 @@ MIN_FACE = 0.04   # 화면 폭 대비 최소 얼굴 크기 (먼 배경 얼굴 �
 PAD = 0.12        # 검출 박스를 이만큼 넓혀서 가림 (이마·턱선 포함)
 BLOCKS = 22       # 얼굴 폭을 몇 칸으로 쪼갤지. 클수록 약한 모자이크(표정이 보임), 작을수록 강함
 BLEND = 0.9       # 모자이크 반영 비율 (1.0 = 완전 적용)
-COVER_RATIO = 1 / 3  # 자막 박스가 얼굴 핵심부(눈·코·입)의 1/3 이상을 가리면 그 장면은 모자이크 생략 (자막+모자이크 겹침 방지)
+COVER_RATIO = 0.25  # 자막 박스가 얼굴 핵심부(눈·코·입)의 25% 이상을 가리면 모자이크 생략. 핵심부는 얼굴보다 작아서 얼굴 기준 약 1/3 에 해당 (자막+모자이크 겹침 방지)
 
 
 def load_detector(w, h):
@@ -104,10 +104,11 @@ def main():
             break
         if i % STEP == 0:
             boxes = detect(det, fr)
+        drawn = False
         for b, core in boxes:
             if not covered(core, rects, i / fps):
-                mosaic(fr, b)
-        if boxes:
+                mosaic(fr, b); drawn = True
+        if drawn:
             hits += 1
             if len(samples) < 12 and i % 15 == 0:
                 samples.append(cv2.resize(fr, (270, int(270 * h / w))))
