@@ -237,6 +237,9 @@ def main():
         for k, (name, chunk) in enumerate(pending):
             t = pool[(n0 + k) % len(pool)]
             jobs.append((t, name, chunk, (n0 + k) >= len(pool)))
+        left = len(pool) - n0 - len(pending)
+        if left <= 3:
+            print(f"[알림] {a.level} 새 주제가 {max(left, 0)}개 남았습니다. 이후에는 앞의 주제가 반복됩니다 → Claude에게 '{a.level} 주제 20개 추가'를 요청하세요.")
         print(f"[{a.level}] 새로 만들 릴스 {len(pending)}개 / 사진이 모자라 다음을 기다리는 사진 {waiting}장 / 이미 사용한 사진 {len(state['photos'])}장")
         if a.limit:
             jobs = jobs[:a.limit]
